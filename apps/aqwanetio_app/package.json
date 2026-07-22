@@ -1,0 +1,7 @@
+{
+  "name": "aqwanetio_app",
+  "private": true,
+  "scripts": {
+    "dev": "flutter run"
+  }
+}
