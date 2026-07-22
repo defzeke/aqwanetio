@@ -1,32 +1,43 @@
 import type { Reading, ReadingsService } from "./readings.service";
 
-function generateReading(hoursAgo: number): Reading {
-  const baseAmmonia = 0.3 + Math.sin(hoursAgo / 6) * 0.15;
-  return {
-    timestamp: new Date(Date.now() - hoursAgo * 3600000).toISOString(),
-    ammonia: Math.max(0, +(baseAmmonia + Math.random() * 0.1).toFixed(3)),
-    temperature: +(26 + Math.sin(hoursAgo / 24) * 2 + Math.random() * 0.5).toFixed(1),
-    ph: +(7.5 + Math.sin(hoursAgo / 12) * 0.3 + Math.random() * 0.1).toFixed(2),
-    dissolvedOxygen: +(5 + Math.sin(hoursAgo / 8) * 0.5 + Math.random() * 0.3).toFixed(1),
-  };
+function buildDataset(seed: number, count: number): Reading[] {
+  const now = Date.now();
+  return Array.from({ length: count }, (_, i) => {
+    const hoursAgo = i;
+    const phase = seed * 1.3;
+    const baseAmmonia = 0.25 + Math.sin((hoursAgo + phase) / 6) * 0.15;
+    // Deterministic "noise" using sin harmonics — no Math.random()
+    const noise = Math.sin(hoursAgo * 7.3 + seed) * 0.04;
+    return {
+      timestamp: new Date(now - hoursAgo * 3600_000).toISOString(),
+      ammonia: Math.max(0, +(baseAmmonia + noise).toFixed(3)),
+      temperature: +(26 + Math.sin((hoursAgo + phase) / 24) * 2 + Math.sin(hoursAgo * 3.1) * 0.2).toFixed(1),
+      ph: +(7.5 + Math.sin((hoursAgo + phase) / 12) * 0.3 + Math.sin(hoursAgo * 2.7) * 0.05).toFixed(2),
+      dissolvedOxygen: +(5 + Math.sin((hoursAgo + phase) / 8) * 0.5 + Math.sin(hoursAgo * 4.1) * 0.15).toFixed(1),
+    };
+  });
 }
 
-const readingsCache = new Map<string, Reading[]>();
+
+function seedFor(pondId: string): number {
+  const m = pondId.match(/\d+/);
+  return m ? parseInt(m[0], 10) : 1;
+}
+
+const POND_IDS = ["pond-1","pond-2","pond-3","pond-4","pond-5",
+                  "pond-6","pond-7","pond-8","pond-9","pond-10"];
+
+const readingsCache = new Map<string, Reading[]>(
+  POND_IDS.map((id) => [id, buildDataset(seedFor(id), 96)])
+);
 
 export const mockReadingsService: ReadingsService = {
   getLatestByPond: (pondId) => {
-    const readings = readingsCache.get(pondId);
-    if (!readings) {
-      const fresh = Array.from({ length: 24 }, (_, i) => generateReading(i));
-      readingsCache.set(pondId, fresh);
-      return fresh[0];
-    }
-    return readings[0];
+    const data = readingsCache.get(pondId) ?? buildDataset(seedFor(pondId), 24);
+    return data[0];
   },
   getByPond: (pondId, limit = 48) => {
-    if (!readingsCache.has(pondId)) {
-      readingsCache.set(pondId, Array.from({ length: 96 }, (_, i) => generateReading(i)));
-    }
-    return readingsCache.get(pondId)!.slice(0, limit);
+    const data = readingsCache.get(pondId) ?? buildDataset(seedFor(pondId), 96);
+    return data.slice(0, limit);
   },
 };

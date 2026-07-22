@@ -5,7 +5,7 @@ import { useTranslation } from "@/lib/translations";
 export default function MapLegend() {
   const { t } = useTranslation();
   return (
-    <div className="absolute right-4 top-4 z-[1000] rounded-lg border border-gray-300 bg-white/90 p-3 shadow-md backdrop-blur-[4px] md:p-4">
+    <div className="rounded-lg border border-gray-300 bg-white/90 p-3 shadow-md backdrop-blur-[4px] md:p-4">
       <h3 className="text-xs font-bold uppercase tracking-wide text-navy">{t("mapLegend.title")}</h3>
       <div className="mt-2 space-y-2">
         <div className="flex items-center gap-2">
