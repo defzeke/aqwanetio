@@ -47,9 +47,6 @@ export default function DocsPage() {
         </div>
       </section>
 
-      <p className="mt-8 text-center text-sm text-text-muted">
-        Detailed technical documentation will be expanded in Phase 5.
-      </p>
     </div>
   );
 }
