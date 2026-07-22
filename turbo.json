@@ -15,7 +15,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": ["LOCALAPPDATA", "PUB_CACHE", "PATH", "JAVA_HOME"]
     }
   }
 }
