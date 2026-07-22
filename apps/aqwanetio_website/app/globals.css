@@ -7,6 +7,16 @@
   --color-accent: #008080;
   --color-accent-dark: #006666;
   --color-accent-light: #009999;
+  --color-navy: #001e40;
+  --color-teal-dark: #006a6a;
+  --color-gray-100: #f7f9fb;
+  --color-gray-200: #e0e3e5;
+  --color-gray-300: #c3c6d1;
+  --color-gray-600: #43474f;
+  --color-gray-700: #737780;
+  --color-gray-800: #6b7280;
+  --color-gray-900: #191c1e;
+  --color-input-bg: #eceef0;
   --color-background: #F8FAFC;
   --color-surface: #FFFFFF;
   --color-text: #1E293B;
