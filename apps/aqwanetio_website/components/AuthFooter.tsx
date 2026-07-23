@@ -11,7 +11,7 @@ export default function AuthFooter() {
         <div className="flex flex-col gap-1">
           <span className="text-sm font-bold text-navy">{t("footer.brand")}</span>
           <span className="text-xs font-semibold text-gray-600">
-            &copy; {new Date().getFullYear()} {t("footer.copyright", { year: new Date().getFullYear() })}
+            {t("footer.copyright", { year: new Date().getFullYear() })}
           </span>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-gray-600">

@@ -47,7 +47,6 @@ export default function LoginForm() {
           <input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
             className="w-full rounded border border-gray-300 bg-input-bg py-3 pl-[41px] pr-12 text-base text-gray-800 placeholder:text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <button
