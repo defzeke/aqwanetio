@@ -26,9 +26,13 @@ const dict = {
       notifications: "Notifications",
     },
     mapLegend: {
-      title: "Map Legend",
-      safe: "Safe (< 1.0 ppm)",
-      critical: "Critical (> 1.0 ppm)",
+      title: "Threshold Guidelines",
+      safeLabel: "Safe:",
+      safeDesc: "Below 0.4 ppm NH₃",
+      warningLabel: "Warning:",
+      warningDesc: "0.4–1.0 ppm NH₃",
+      toxicLabel: "Toxic:",
+      toxicDesc: "Above 1.0 ppm NH₃",
     },
     ctaCard: {
       title: "Detailed Data Locked",
@@ -107,9 +111,13 @@ const dict = {
       notifications: "Mga Abiso",
     },
     mapLegend: {
-      title: "Alamat ng Mapa",
-      safe: "Ligtas (< 1.0 ppm)",
-      critical: "Mapanganib (> 1.0 ppm)",
+      title: "Mga Alituntunin sa Limitasyon",
+      safeLabel: "Ligtas:",
+      safeDesc: "Mas mababa sa 0.4 ppm NH₃",
+      warningLabel: "Babala:",
+      warningDesc: "0.4–1.0 ppm NH₃",
+      toxicLabel: "Nakakalason:",
+      toxicDesc: "Higit sa 1.0 ppm NH₃",
     },
     ctaCard: {
       title: "Naka-lock ang Detalyadong Datos",

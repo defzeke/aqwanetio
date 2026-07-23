@@ -15,13 +15,13 @@ const navLinks = [
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const { notifications, toggleNotifications } = useSettings();
+  const { notifications, toggleNotifications, language, setLanguage } = useSettings();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-300 bg-white px-4 sm:px-6">
+    <header className="relative z-50 flex h-16 shrink-0 items-center justify-between border-b border-gray-300 bg-white px-4 sm:px-6">
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2">
           <span className="h-8 w-8 overflow-hidden rounded">
@@ -100,7 +100,7 @@ export default function Header() {
       </button>
 
       {mobileOpen && (
-        <div className="absolute left-0 right-0 top-16 border-b border-gray-300 bg-white md:hidden">
+        <div className="absolute left-0 right-0 top-16 z-50 border-b border-gray-300 bg-white shadow-lg md:hidden">
           <div className="space-y-1 px-4 py-3">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
@@ -162,7 +162,13 @@ export default function Header() {
                   </svg>
                   {t("settings.language")}
                 </span>
-                <span className="text-sm font-semibold text-gray-600">EN</span>
+                <button
+                  type="button"
+                  onClick={() => setLanguage(language === "en" ? "fil" : "en")}
+                  className="rounded border border-gray-300 px-2 py-0.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100"
+                >
+                  {language === "en" ? "EN" : "FIL"}
+                </button>
               </div>
             </div>
           </div>

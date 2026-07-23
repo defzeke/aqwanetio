@@ -14,7 +14,7 @@ interface SettingsContextValue {
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>("fil");
   const [notifications, setNotifications] = useState(false);
 
   const toggleNotifications = useCallback(() => {

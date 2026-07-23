@@ -1,20 +1,65 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useTranslation } from "@/lib/translations";
 
 export default function MapLegend() {
   const { t } = useTranslation();
+  const [time, setTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setTime(new Date());
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="rounded-lg border border-gray-300 bg-white/90 p-3 shadow-md backdrop-blur-[4px] md:p-4">
-      <h3 className="text-xs font-bold uppercase tracking-wide text-navy">{t("mapLegend.title")}</h3>
-      <div className="mt-2 space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#22c55e]" />
-          <span className="text-sm text-gray-900">{t("mapLegend.safe")}</span>
+      <h3 className="text-base font-bold text-navy mb-3">{t("mapLegend.title")}</h3>
+      <div className="space-y-2.5">
+        <div className="flex items-start gap-2.5">
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#15803d]" />
+          <span className="text-sm text-gray-700">
+            <strong className="text-gray-900">{t("mapLegend.safeLabel")}</strong>{" "}
+            {t("mapLegend.safeDesc")}
+          </span>
         </div>
+        <div className="flex items-start gap-2.5">
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#d97706]" />
+          <span className="text-sm text-gray-700">
+            <strong className="text-gray-900">{t("mapLegend.warningLabel")}</strong>{" "}
+            {t("mapLegend.warningDesc")}
+          </span>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#dc2626]" />
+          <span className="text-sm text-gray-700">
+            <strong className="text-gray-900">{t("mapLegend.toxicLabel")}</strong>{" "}
+            {t("mapLegend.toxicDesc")}
+          </span>
+        </div>
+      </div>
+
+      <div className="my-3 border-t border-gray-200" />
+
+      <div className="flex items-center justify-between gap-6">
         <div className="flex items-center gap-2">
-          <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#ef4444]" />
-          <span className="text-sm text-gray-900">{t("mapLegend.critical")}</span>
+          <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
+          <div>
+            <div className="text-sm font-bold text-gray-900">32°C</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Partly Cloudy</div>
+          </div>
+        </div>
+        
+        <div className="text-right">
+          <div className="text-sm font-bold text-gray-900">
+            {time ? time.toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit' }) : '--:--'}
+          </div>
+          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            {time ? time.toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
+          </div>
         </div>
       </div>
     </div>
