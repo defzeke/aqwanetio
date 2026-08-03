@@ -17,7 +17,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ListenableBuilder(
+      listenable: settingsProvider,
+      builder: (context, _) => Scaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -84,6 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const AuthFooter(),
           ],
         ),
+      ),
       ),
     );
   }
