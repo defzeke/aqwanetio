@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../translations.dart';
 
 class PondCard extends StatelessWidget {
   final Pond pond;
@@ -34,7 +35,7 @@ class PondCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: _statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: _statusColor.withValues(alpha: 0.2))),
-                child: Text(pond.status.name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _statusColor)),
+                child: Text(t('status.${pond.status.name}'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _statusColor)),
               ),
             ],
           ),

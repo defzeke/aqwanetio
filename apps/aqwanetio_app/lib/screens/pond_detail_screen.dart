@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models.dart';
 import '../translations.dart';
 import '../theme.dart';
+import '../main.dart';
 import '../widgets/pond_chart.dart';
 import '../widgets/readings_table.dart';
 import '../widgets/prediction_panel.dart';
@@ -16,7 +17,9 @@ class PondDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final readings = getReadings(pond.id, limit: 12);
     final predictions = getPredictions(pond.id);
-    return Scaffold(
+    return ListenableBuilder(
+      listenable: settingsProvider,
+      builder: (context, _) => Scaffold(
       appBar: AppBar(
         title: Row(children: [
           Expanded(child: Text(pond.name, overflow: TextOverflow.ellipsis)),
@@ -41,6 +44,7 @@ class PondDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           PredictionPanel(predictions: predictions),
         ]),
+      ),
       ),
     );
   }

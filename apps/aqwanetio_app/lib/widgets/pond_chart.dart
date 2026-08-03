@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models.dart';
-import '../theme.dart';
+import '../translations.dart';
 
 class PondChart extends StatefulWidget {
   final List<Reading> readings;
@@ -13,34 +13,18 @@ class PondChart extends StatefulWidget {
 }
 
 class _PondChartState extends State<PondChart> {
-  String _selectedMetric = 'ammonia';
+  static const _warning = 1.0;
+  static const _color = Color(0xFF22c55e);
   int? _hoveredIdx;
-
-  static const _metrics = [
-    {'key': 'ammonia', 'label': 'NH₃ (ppm)', 'color': Color(0xFF22c55e)},
-    {'key': 'temperature', 'label': 'Temp (°C)', 'color': Color(0xFF3b82f6)},
-    {'key': 'ph', 'label': 'pH', 'color': Color(0xFFa855f7)},
-    {'key': 'dissolvedOxygen', 'label': 'DO (mg/L)', 'color': Color(0xFFf59e0b)},
-  ];
-
-  static const _warnings = {'ammonia': 1.0, 'temperature': 33.0, 'ph': 5.5, 'dissolvedOxygen': 3.0};
 
   List<Reading> get _history => widget.readings.reversed.toList();
 
   @override
   Widget build(BuildContext context) {
     final history = _history;
-    final vals = history.map((r) {
-      switch (_selectedMetric) {
-        case 'ammonia': return r.ammonia;
-        case 'temperature': return r.temperature;
-        case 'ph': return r.ph;
-        case 'dissolvedOxygen': return r.dissolvedOxygen;
-        default: return 0.0;
-      }
-    }).toList();
+    final vals = history.map((r) => r.ammonia).toList();
 
-    final forecastVals = _selectedMetric == 'ammonia' ? widget.predictions.map((p) => p.predictedAmmonia).toList() : <double>[];
+    final forecastVals = widget.predictions.map((p) => p.predictedAmmonia).toList();
     final upper = widget.predictions.map((p) => p.upperBound).toList();
     final lower = widget.predictions.map((p) => p.lowerBound).toList();
 
@@ -49,24 +33,6 @@ class _PondChartState extends State<PondChart> {
     final maxV = allVals.isEmpty ? 1.0 : allVals.reduce(math.max) * 1.08;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Wrap(
-        spacing: 6,
-        children: _metrics.map((m) {
-          final active = m['key'] == _selectedMetric;
-          return FilterChip(
-            label: Text(m['label'] as String, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: active ? Colors.white : null)),
-            selected: active,
-            onSelected: (_) => setState(() => _selectedMetric = m['key'] as String),
-            selectedColor: m['color'] as Color,
-            checkmarkColor: Colors.white,
-            backgroundColor: Colors.white,
-            side: BorderSide(color: active ? m['color'] as Color : AppColors.border),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            visualDensity: VisualDensity.compact,
-          );
-        }).toList(),
-      ),
-      const SizedBox(height: 12),
       SizedBox(
         height: 260,
         child: GestureDetector(
@@ -97,8 +63,8 @@ class _PondChartState extends State<PondChart> {
               lower: lower,
               minV: minV,
               maxV: maxV,
-              warning: _warnings[_selectedMetric]!,
-              color: _metrics.firstWhere((m) => m['key'] == _selectedMetric)['color'] as Color,
+              warning: _warning,
+              color: _color,
               hoveredIdx: _hoveredIdx,
               historyCount: vals.length,
             ),
@@ -108,14 +74,14 @@ class _PondChartState extends State<PondChart> {
       const SizedBox(height: 8),
       Row(
         children: [
-          _buildTile(history.isEmpty ? 0 : vals.last, _metrics.firstWhere((m) => m['key'] == _selectedMetric)['label'] as String, _metrics.firstWhere((m) => m['key'] == _selectedMetric)['color'] as Color),
+          _buildTile(history.isEmpty ? 0 : vals.last, t('modal.ammonia'), _color),
         ],
       ),
     ]);
   }
 
   Widget _buildTile(double val, String label, Color color) {
-    final safe = val < _warnings[_selectedMetric]!;
+    final safe = val < _warning;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -134,7 +100,7 @@ class _PondChartState extends State<PondChart> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: safe ? const Color(0xFFbbf7d0) : const Color(0xFFfecaca), borderRadius: BorderRadius.circular(12)),
-            child: Text(safe ? 'Safe' : 'Critical', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: safe ? const Color(0xFF166534) : const Color(0xFF991b1b))),
+            child: Text(safe ? t('status.safe') : t('status.critical'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: safe ? const Color(0xFF166534) : const Color(0xFF991b1b))),
           ),
         ]),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../translations.dart';
 
 class PredictionPanel extends StatelessWidget {
   final List<Prediction> predictions;
@@ -14,11 +15,11 @@ class PredictionPanel extends StatelessWidget {
         headingRowColor: WidgetStateProperty.all(AppColors.background),
         border: TableBorder.all(color: AppColors.border, borderRadius: BorderRadius.circular(8)),
         columnSpacing: 24,
-        columns: const [
-          DataColumn(label: Text('Forecast', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('Predicted NH₃', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('Range', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('Bias', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
+        columns: [
+          DataColumn(label: Text(t('table.forecast'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
+          DataColumn(label: Text(t('table.predictedAmmonia'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
+          DataColumn(label: Text(t('table.range'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
+          DataColumn(label: Text(t('table.bias'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
         ],
         rows: predictions.map((p) => DataRow(cells: [
           DataCell(Text('${p.timestamp.hour.toString().padLeft(2, '0')}:${p.timestamp.minute.toString().padLeft(2, '0')}', style: const TextStyle(color: AppColors.textMuted))),

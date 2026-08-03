@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../translations.dart';
 
 class ReadingsTable extends StatelessWidget {
   final List<Reading> readings;
@@ -8,26 +9,46 @@ class ReadingsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowColor: WidgetStateProperty.all(AppColors.background),
-        border: TableBorder.all(color: AppColors.border, borderRadius: BorderRadius.circular(8)),
-        columnSpacing: 24,
-        columns: const [
-          DataColumn(label: Text('Time', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('NH₃ (ppm)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('Temp (°C)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('pH', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
-          DataColumn(label: Text('DO (mg/L)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted))),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Table(
+        columnWidths: const {
+          0: FlexColumnWidth(1.5),
+          1: FlexColumnWidth(1),
+        },
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        border: TableBorder(horizontalInside: BorderSide(color: AppColors.border)),
+        children: [
+          TableRow(
+            decoration: const BoxDecoration(color: AppColors.background),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Text(t('table.time'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Text(t('modal.ammonia'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+              ),
+            ],
+          ),
+          ...readings.map((r) => TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text('${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}', style: const TextStyle(color: AppColors.textMuted)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text(r.ammonia.toStringAsFixed(3)),
+              ),
+            ],
+          )),
         ],
-        rows: readings.map((r) => DataRow(cells: [
-          DataCell(Text('${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}', style: const TextStyle(color: AppColors.textMuted))),
-          DataCell(Text(r.ammonia.toStringAsFixed(3))),
-          DataCell(Text(r.temperature.toStringAsFixed(1))),
-          DataCell(Text(r.ph.toStringAsFixed(2))),
-          DataCell(Text(r.dissolvedOxygen.toStringAsFixed(1))),
-        ])).toList(),
       ),
     );
   }
