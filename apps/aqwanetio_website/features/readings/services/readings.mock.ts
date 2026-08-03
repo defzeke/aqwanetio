@@ -11,9 +11,6 @@ function buildDataset(seed: number, count: number): Reading[] {
     return {
       timestamp: new Date(now - hoursAgo * 3600_000).toISOString(),
       ammonia: Math.max(0, +(baseAmmonia + noise).toFixed(3)),
-      temperature: +(26 + Math.sin((hoursAgo + phase) / 24) * 2 + Math.sin(hoursAgo * 3.1) * 0.2).toFixed(1),
-      ph: +(7.5 + Math.sin((hoursAgo + phase) / 12) * 0.3 + Math.sin(hoursAgo * 2.7) * 0.05).toFixed(2),
-      dissolvedOxygen: +(5 + Math.sin((hoursAgo + phase) / 8) * 0.5 + Math.sin(hoursAgo * 4.1) * 0.15).toFixed(1),
     };
   });
 }

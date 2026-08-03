@@ -8,9 +8,6 @@ export default function ReadingsTable({ readings }: { readings: Reading[] }) {
           <tr>
             <th className="px-4 py-3">Time</th>
             <th className="px-4 py-3">NH₃ (ppm)</th>
-            <th className="px-4 py-3">Temp (°C)</th>
-            <th className="px-4 py-3">pH</th>
-            <th className="px-4 py-3">DO (mg/L)</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border text-text">
@@ -20,9 +17,6 @@ export default function ReadingsTable({ readings }: { readings: Reading[] }) {
                 {new Date(r.timestamp).toLocaleTimeString()}
               </td>
               <td className="px-4 py-2.5">{r.ammonia}</td>
-              <td className="px-4 py-2.5">{r.temperature}</td>
-              <td className="px-4 py-2.5">{r.ph}</td>
-              <td className="px-4 py-2.5">{r.dissolvedOxygen}</td>
             </tr>
           ))}
         </tbody>

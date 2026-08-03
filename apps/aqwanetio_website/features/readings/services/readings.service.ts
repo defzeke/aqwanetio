@@ -1,9 +1,6 @@
 export interface Reading {
   timestamp: string;
   ammonia: number;
-  temperature: number;
-  ph: number;
-  dissolvedOxygen: number;
 }
 
 export interface ReadingsService {
