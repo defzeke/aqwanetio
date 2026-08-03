@@ -24,7 +24,11 @@ String t(String path, [Map<String, String>? vars]) {
 
 final _en = {
   'header': {'brand': 'DOST-ASTI', 'subtitle': 'Aquaculture Intelligence', 'map': 'Map', 'docs': 'Documentation', 'signIn': 'Sign In', 'register': 'Register', 'signOut': 'Sign Out'},
-  'footer': {'brand': 'DOST-ASTI Aquaculture', 'contact': 'Contact Us', 'privacy': 'Privacy Policy', 'dost': 'DOST Official', 'tos': 'Terms of Service'},
+  'nav': {'map': 'Map', 'ponds': 'Ponds'},
+  'status': {'safe': 'Safe', 'warning': 'Warning', 'toxic': 'Toxic', 'critical': 'Critical'},
+  'weather': {'partlyCloudy': 'Partly Cloudy'},
+  'table': {'time': 'Time', 'forecast': 'Forecast', 'predictedAmmonia': 'Predicted NH₃', 'range': 'Range', 'bias': 'Bias'},
+  'footer': {'brand': 'DOST-ASTI Aquaculture', 'contact': 'Contact Us', 'privacy': 'Privacy Policy', 'dost': 'DOST Official', 'tos': 'Terms of Service', 'copyright': '© {year} DOST-ASTI. All Rights Reserved.'},
   'settings': {'title': 'Settings', 'language': 'Language', 'notifications': 'Notifications'},
   'mapLegend': {'title': 'Threshold Guidelines', 'safeLabel': 'Safe:', 'safeDesc': 'Below 0.4 ppm NH₃', 'warningLabel': 'Warning:', 'warningDesc': '0.4–1.0 ppm NH₃', 'toxicLabel': 'Toxic:', 'toxicDesc': 'Above 1.0 ppm NH₃'},
   'ctaCard': {'title': 'Detailed Data Locked', 'desc': 'Create your free account to access and claim ponds, view detailed time-series predictions, and water quality trends.', 'button': 'Create Free Account'},
@@ -36,7 +40,11 @@ final _en = {
 
 final _fil = {
   'header': {'brand': 'DOST-ASTI', 'subtitle': 'Intelihensiya sa Akwakultura', 'map': 'Mapa', 'docs': 'Dokumentasyon', 'signIn': 'Mag-sign In', 'register': 'Magrehistro', 'signOut': 'Mag-sign Out'},
-  'footer': {'brand': 'DOST-ASTI Akwakultura', 'contact': 'Makipag-ugnayan', 'privacy': 'Patakaran sa Pagkapribado', 'dost': 'Opisyal ng DOST', 'tos': 'Mga Tuntunin ng Serbisyo'},
+  'nav': {'map': 'Mapa', 'ponds': 'Mga Pond'},
+  'status': {'safe': 'Ligtas', 'warning': 'Babala', 'toxic': 'Nakakalason', 'critical': 'Kritikal'},
+  'weather': {'partlyCloudy': 'Bahagyang Maulap'},
+  'table': {'time': 'Oras', 'forecast': 'Taya', 'predictedAmmonia': 'Inaasahang NH₃', 'range': 'Saklaw', 'bias': 'Bias'},
+  'footer': {'brand': 'DOST-ASTI Akwakultura', 'contact': 'Makipag-ugnayan', 'privacy': 'Patakaran sa Pagkapribado', 'dost': 'Opisyal ng DOST', 'tos': 'Mga Tuntunin ng Serbisyo', 'copyright': '© {year} DOST-ASTI. Lahat ng Karapatan ay Nakalaan.'},
   'settings': {'title': 'Mga Setting', 'language': 'Wika', 'notifications': 'Mga Abiso'},
   'mapLegend': {'title': 'Mga Alituntunin sa Limitasyon', 'safeLabel': 'Ligtas:', 'safeDesc': 'Mas mababa sa 0.4 ppm NH₃', 'warningLabel': 'Babala:', 'warningDesc': '0.4–1.0 ppm NH₃', 'toxicLabel': 'Nakakalason:', 'toxicDesc': 'Higit sa 1.0 ppm NH₃'},
   'ctaCard': {'title': 'Naka-lock ang Detalyadong Datos', 'desc': 'Gumawa ng libreng account para ma-access at ma-claim ang mga pond, tingnan ang detalyadong taya ng panahon, at mga uso sa kalidad ng tubig.', 'button': 'Gumawa ng Libreng Account'},

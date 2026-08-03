@@ -17,9 +17,16 @@ class _OSMTileProvider extends NetworkTileProvider {
   }
 }
 
-class MapScreen extends StatelessWidget {
+class MapScreen extends StatefulWidget {
   final void Function(Pond pond) onPondTap;
   const MapScreen({super.key, required this.onPondTap});
+
+  @override
+  State<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
+  bool _showCards = true;
 
   Color _statusColor(PondStatus s) => switch (s) { PondStatus.safe => const Color(0xFF22c55e), PondStatus.warning => const Color(0xFFeab308), PondStatus.toxic => const Color(0xFFef4444) };
 
@@ -48,7 +55,7 @@ class MapScreen extends StatelessWidget {
                   width: 28,
                   height: 28,
                   child: GestureDetector(
-                    onTap: () => onPondTap(pond),
+                    onTap: () => widget.onPondTap(pond),
                     child: Container(
                       decoration: BoxDecoration(
                         color: _statusColor(pond.status),
@@ -64,16 +71,48 @@ class MapScreen extends StatelessWidget {
           ],
         ),
         Positioned(
+          right: 12,
+          top: 12,
+          child: Material(
+            color: Colors.white,
+            shape: const CircleBorder(),
+            elevation: 2,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => setState(() => _showCards = !_showCards),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  _showCards ? Icons.layers_outlined : Icons.layers_clear,
+                  size: 20,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
           left: 12,
           top: 12,
-          child: _MapLegend(),
-        ),
-        if (!authProvider.isLoggedIn)
-          Positioned(
-            right: 12,
-            bottom: 24,
-            child: _MapCtaCard(),
+          child: IgnorePointer(
+            ignoring: !_showCards,
+            child: AnimatedSlide(
+              offset: _showCards ? Offset.zero : const Offset(-1.5, 0),
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _MapLegend(),
+                  if (!authProvider.isLoggedIn) ...[
+                    const SizedBox(height: 12),
+                    _MapCtaCard(),
+                  ],
+                ],
+              ),
+            ),
           ),
+        ),
       ],
     );
   }
@@ -116,7 +155,7 @@ class _MapLegendState extends State<_MapLegend> {
           const SizedBox(width: 4),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('32°C', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.text)),
-            Text('Partly Cloudy', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted.withValues(alpha: 0.7))),
+            Text(t('weather.partlyCloudy'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted.withValues(alpha: 0.7))),
           ]),
           const Spacer(),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [

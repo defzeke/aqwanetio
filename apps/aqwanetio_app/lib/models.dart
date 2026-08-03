@@ -2,7 +2,6 @@ import 'dart:math';
 
 enum PondStatus { safe, warning, toxic }
 enum UserRole { anonymous, unverified, verifiedOwner }
-enum AlertSeverity { warning, toxic }
 
 class Pond {
   final String id;
@@ -31,17 +30,6 @@ class Prediction {
   final double lowerBound;
   final double biasCorrection;
   Prediction({required this.timestamp, required this.predictedAmmonia, required this.upperBound, required this.lowerBound, required this.biasCorrection});
-}
-
-class Alert {
-  final String id;
-  final String pondId;
-  final AlertSeverity severity;
-  final String message;
-  final String recommendation;
-  final DateTime timestamp;
-  bool acknowledged;
-  Alert({required this.id, required this.pondId, required this.severity, required this.message, required this.recommendation, required this.timestamp, this.acknowledged = false});
 }
 
 class User {
@@ -119,16 +107,4 @@ List<Reading> getReadings(String pondId, {int limit = 48}) {
 List<Prediction> getPredictions(String pondId) {
   _predictionsCache.putIfAbsent(pondId, () => _buildPredictions(_seedFor(pondId)));
   return _predictionsCache[pondId]!;
-}
-
-List<Alert> mockAlerts = [
-  Alert(id: 'alert-1', pondId: 'pond-3', severity: AlertSeverity.toxic, message: 'Ammonia level at Pampanga River Aqua is 1.2 ppm — above toxic threshold.', recommendation: 'Initiate immediate water exchange and increase aeration.', timestamp: DateTime.now()),
-  Alert(id: 'alert-2', pondId: 'pond-8', severity: AlertSeverity.toxic, message: 'Ammonia level at Rizal Highland Aqua is 1.5 ppm — critically toxic.', recommendation: 'Emergency: Stop feeding, initiate full water exchange, check aeration systems.', timestamp: DateTime.now()),
-  Alert(id: 'alert-3', pondId: 'pond-2', severity: AlertSeverity.warning, message: 'Ammonia level at Batangas Tilapia Farm approaching warning threshold.', recommendation: 'Monitor closely. Consider partial water exchange if trend continues.', timestamp: DateTime.now()),
-];
-
-List<Alert> getActiveAlerts() => mockAlerts.where((a) => !a.acknowledged).toList();
-
-void acknowledgeAlert(String id) {
-  mockAlerts = mockAlerts.map((a) => a.id == id ? Alert(id: a.id, pondId: a.pondId, severity: a.severity, message: a.message, recommendation: a.recommendation, timestamp: a.timestamp, acknowledged: true) : a).toList();
 }

@@ -41,21 +41,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ListenableBuilder(
+      listenable: settingsProvider,
+      builder: (context, _) => Scaffold(
       body: IndexedStack(index: _tab, children: [
         _buildMapTab(context),
         _buildPondsTab(),
-        _buildAlertsTab(),
       ]),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
         indicatorColor: AppColors.primary.withValues(alpha: 0.1),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map, color: AppColors.primary), label: 'Map'),
-          NavigationDestination(icon: Icon(Icons.pool_outlined), selectedIcon: Icon(Icons.pool, color: AppColors.primary), label: 'Ponds'),
-          NavigationDestination(icon: Icon(Icons.notifications_outlined), selectedIcon: Icon(Icons.notifications, color: AppColors.primary), label: 'Alerts'),
+        destinations: [
+          NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map, color: AppColors.primary), label: t('nav.map')),
+          NavigationDestination(icon: Icon(Icons.pool_outlined), selectedIcon: Icon(Icons.pool, color: AppColors.primary), label: t('nav.ponds')),
         ],
+      ),
       ),
     );
   }
@@ -69,17 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(children: [
-        Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4)),
-          alignment: Alignment.center,
-          child: const Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-        ),
+        Image.asset('assets/images/dostasti-logo.png', width: 32, height: 32),
         const SizedBox(width: 8),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.navy)),
-            Text(t('header.subtitle'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
           ]),
         ),
         if (actions != null) ...actions,
@@ -127,53 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) => PondCard(pond: ponds[i], onTap: () => _openPondDetail(ponds[i])),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlertsTab() {
-    final activeAlerts = getActiveAlerts();
-    return SafeArea(
-      child: Column(
-        children: [
-          _buildAppBar('Alerts'),
-          Expanded(
-            child: activeAlerts.isEmpty
-              ? const Center(child: Text('No active alerts', style: TextStyle(color: AppColors.textMuted)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: activeAlerts.length,
-                  itemBuilder: (_, i) {
-                    final alert = activeAlerts[i];
-                    final isToxic = alert.severity == AlertSeverity.toxic;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: isToxic ? AppColors.alert : AppColors.warning)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Row(children: [
-                            Icon(isToxic ? Icons.dangerous : Icons.warning_amber, size: 18, color: isToxic ? AppColors.alert : AppColors.warning),
-                            const SizedBox(width: 6),
-                            Expanded(child: Text(alert.message, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))),
-                          ]),
-                          const SizedBox(height: 4),
-                          Text(alert.recommendation, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () { acknowledgeAlert(alert.id); setState(() {}); },
-                              child: const Text('Acknowledge', style: TextStyle(fontSize: 12)),
-                            ),
-                          ),
-                        ]),
-                      ),
-                    );
-                  },
-                ),
           ),
         ],
       ),
