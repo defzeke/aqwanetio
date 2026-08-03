@@ -29,7 +29,7 @@ export default function Header() {
           </span>
           <div className="flex flex-col leading-tight">
             <span className="text-xl font-bold text-navy">{t("header.brand")}</span>
-            <span className="text-sm font-medium text-gray-600 sm:text-base">{t("header.subtitle")}</span>
+            <span className="text-sm font-medium text-gray-600 sm:text-base"></span>
           </div>
         </Link>
 
