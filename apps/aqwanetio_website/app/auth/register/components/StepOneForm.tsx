@@ -11,47 +11,47 @@ export default function StepOneForm() {
     <div className="flex flex-col gap-3 pt-2">
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="flex flex-1 flex-col gap-2">
-          <label className="text-base text-gray-900" htmlFor="fullName">{t("auth.fullName")}</label>
+          <label className="text-base text-ink" htmlFor="fullName">{t("auth.fullName")}</label>
           <input
             id="fullName"
             type="text"
             placeholder={t("auth.fullNamePlaceholder")}
-            className="h-10 w-full rounded border border-gray-300 bg-gray-100 px-[17px] text-base text-gray-700 placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+            className="neu-input h-10 w-full rounded-lg px-[17px] text-base"
           />
         </div>
         <div className="flex flex-1 flex-col gap-2">
-          <label className="text-base text-gray-900" htmlFor="organization">{t("auth.organization")}</label>
+          <label className="text-base text-ink" htmlFor="organization">{t("auth.organization")}</label>
           <input
             id="organization"
             type="text"
             placeholder={t("auth.orgPlaceholder")}
-            className="h-10 w-full rounded border border-gray-300 bg-gray-100 px-[17px] text-base text-gray-700 placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+            className="neu-input h-10 w-full rounded-lg px-[17px] text-base"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-base text-gray-900" htmlFor="regEmail">{t("auth.emailOfficial")}</label>
+        <label className="text-base text-ink" htmlFor="regEmail">{t("auth.emailOfficial")}</label>
         <input
           id="regEmail"
           type="email"
           placeholder={t("auth.emailPlaceholder")}
-          className="h-10 w-full rounded border border-gray-300 bg-gray-100 px-[17px] text-base text-gray-700 placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+          className="neu-input h-10 w-full rounded-lg px-[17px] text-base"
         />
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="flex flex-1 flex-col gap-2">
-          <label className="text-base text-gray-900" htmlFor="regPassword">{t("auth.password")}</label>
+          <label className="text-base text-ink" htmlFor="regPassword">{t("auth.password")}</label>
           <div className="relative">
             <input
               id="regPassword"
               type={showPassword ? "text" : "password"}
-              className="h-10 w-full rounded border border-gray-300 bg-gray-100 pl-[17px] pr-10 text-base text-gray-700 placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+              className="neu-input h-10 w-full rounded-lg pl-[17px] pr-10 text-base"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-3 flex items-center text-gray-800 hover:text-gray-600"
+              className="absolute inset-y-0 right-3 flex items-center text-muted hover:text-ink"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
@@ -69,16 +69,16 @@ export default function StepOneForm() {
           </div>
         </div>
         <div className="flex flex-1 flex-col gap-2">
-          <label className="text-base text-gray-900" htmlFor="confirmPassword">{t("auth.confirmPassword")}</label>
+          <label className="text-base text-ink" htmlFor="confirmPassword">{t("auth.confirmPassword")}</label>
           <div className="relative">
             <input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              className="h-10 w-full rounded border border-gray-300 bg-gray-100 pl-[17px] pr-10 text-base text-gray-700 placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+              className="neu-input h-10 w-full rounded-lg pl-[17px] pr-10 text-base"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-3 flex items-center text-gray-800 hover:text-gray-600"
+              className="absolute inset-y-0 right-3 flex items-center text-muted hover:text-ink"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               aria-label={showConfirmPassword ? "Hide password" : "Show password"}
             >

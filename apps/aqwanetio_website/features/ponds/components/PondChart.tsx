@@ -9,7 +9,7 @@ interface Props {
   predictions?: Prediction[];
 }
 
-const NH3_COLOR = "#22c55e";
+const NH3_COLOR = "var(--color-cyan)";
 const DANGER = 1.0; // ppm
 const UNIT = "ppm";
 
@@ -55,21 +55,21 @@ function SvgTooltip({ d }: { d: TooltipData }) {
     <g pointerEvents="none">
       <line
         x1={d.x} y1={PAD.top} x2={d.x} y2={PAD.top + iH}
-        stroke="#94a3b8" strokeWidth={1} strokeDasharray="3 2"
+        stroke="var(--color-line)" strokeWidth={1} strokeDasharray="3 2"
       />
       <rect
         x={tx} y={ty} width={TW} height={TH} rx={5}
-        fill="white" stroke="#e2e8f0" strokeWidth={1}
-        filter="drop-shadow(0 1px 3px rgba(0,0,0,.14))"
+        fill="var(--color-surface)" stroke="var(--color-line)" strokeWidth={1}
+        filter="drop-shadow(0 1px 3px rgba(0,0,0,.3))"
       />
-      <text x={tx + padding} y={ty + padding + 8} fontSize={9} fill="#6b7280" fontWeight="500">
+      <text x={tx + padding} y={ty + padding + 8} fontSize={9} fill="var(--color-muted)" fontWeight="500">
         {d.ts}
       </text>
       <g>
         <circle cx={tx + padding + 5} cy={ty + padding + 17 + 5} r={3.5} fill={NH3_COLOR} />
         <text
           x={tx + padding + 13} y={ty + padding + 17 + 9}
-          fontSize={10} fontWeight="600" fill="#1e293b"
+          fontSize={10} fontWeight="600" fill="var(--color-ink)"
         >
           {d.value}{d.isForecast ? " ⋯" : ""}
         </text>
@@ -200,7 +200,7 @@ export default function PondChart({ readings, predictions }: Props) {
   return (
     <div className="space-y-4">
       {/* Chart */}
-      <div className="rounded-lg border border-border bg-white p-3 overflow-x-auto">
+      <div className="neu-surface-sm p-3 overflow-x-auto">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${W} ${H}`}
@@ -212,15 +212,15 @@ export default function PondChart({ readings, predictions }: Props) {
           {/* Grid lines */}
           {yTicks.map(({ y }, i) => (
             <line key={i} x1={PAD.left} y1={y} x2={PAD.left + iW} y2={y}
-              stroke="#e5e7eb" strokeWidth={1} strokeDasharray="4 3" />
+              stroke="var(--color-chart-grid)" strokeWidth={1} strokeDasharray="4 3" />
           ))}
 
           {showDanger && (
             <>
               <line x1={PAD.left} y1={dangerY} x2={PAD.left + iW} y2={dangerY}
-                stroke="#ef4444" strokeWidth={1.5} strokeDasharray="6 3" />
+                stroke="var(--color-alert)" strokeWidth={1.5} strokeDasharray="6 3" />
               <text x={PAD.left + iW - 4} y={dangerY - 4}
-                fontSize={10} fill="#ef4444" textAnchor="end">
+                fontSize={10} fill="var(--color-alert)" textAnchor="end">
                 Critical {DANGER} ppm
               </text>
             </>
@@ -228,14 +228,14 @@ export default function PondChart({ readings, predictions }: Props) {
 
           {/* Confidence band (ammonia forecast) */}
           {bandPath && (
-            <path d={bandPath} fill="#fecaca" fillOpacity={0.4} stroke="none" />
+            <path d={bandPath} fill="var(--color-band)" stroke="none" />
           )}
 
           {separatorX !== null && (
             <line
               x1={separatorX} y1={PAD.top}
               x2={separatorX} y2={PAD.top + iH}
-              stroke="#d1d5db" strokeWidth={1} strokeDasharray="4 3"
+              stroke="var(--color-line)" strokeWidth={1} strokeDasharray="4 3"
             />
           )}
 
@@ -271,7 +271,7 @@ export default function PondChart({ readings, predictions }: Props) {
           {/* Y-axis labels */}
           {yTicks.map(({ v, y }, i) => (
             <text key={i} x={PAD.left - 6} y={y + 4}
-              fontSize={10} fill="#6b7280" textAnchor="end">
+              fontSize={10} fill="var(--color-muted)" textAnchor="end">
               {v.toFixed(2)}
             </text>
           ))}
@@ -279,7 +279,7 @@ export default function PondChart({ readings, predictions }: Props) {
           {/* X-axis labels */}
           {xTicks.map(({ i, ts }) => (
             <text key={i} x={scaleX(i, domainMax)} y={PAD.top + iH + 14}
-              fontSize={10} fill="#6b7280" textAnchor="middle">
+              fontSize={10} fill="var(--color-muted)" textAnchor="middle">
               {fmtTime(ts)}
             </text>
           ))}
@@ -288,12 +288,12 @@ export default function PondChart({ readings, predictions }: Props) {
           <g transform={`translate(${PAD.left + 4}, ${PAD.top + 4})`} pointerEvents="none">
             <line x1={0} y1={6} x2={18} y2={6} stroke={NH3_COLOR} strokeWidth={2} />
             <circle cx={9} cy={6} r={3} fill={NH3_COLOR} />
-            <text x={22} y={10} fontSize={10} fill="#374151">NH₃</text>
+            <text x={22} y={10} fontSize={10} fill="var(--color-ink)">NH₃</text>
             {forecastPts.length > 0 && (
               <g transform="translate(0, 16)">
                 <line x1={0} y1={6} x2={18} y2={6}
                   stroke={NH3_COLOR} strokeWidth={2} strokeDasharray="6 3" opacity={0.7} />
-                <text x={22} y={10} fontSize={10} fill="#374151">Forecast</text>
+                <text x={22} y={10} fontSize={10} fill="var(--color-ink)">Forecast</text>
               </g>
             )}
           </g>
@@ -314,28 +314,23 @@ export default function PondChart({ readings, predictions }: Props) {
 
       {/* Current value tile */}
       <div
-        className="flex items-center gap-2 rounded-lg border px-3 py-2.5"
-        style={{
-          borderColor: safe ? "#bbf7d0" : "#fecaca",
-          backgroundColor: safe ? "#f0fdf4" : "#fef2f2",
-        }}
+        className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 ${
+          safe ? "border-safe/30 bg-safe/10" : "border-alert/30 bg-alert/10"
+        }`}
       >
         <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: NH3_COLOR }}
+          className={`h-2.5 w-2.5 shrink-0 rounded-full ${safe ? "bg-safe" : "bg-alert"}`}
         />
-        <span className="text-xs font-medium shrink-0" style={{ color: safe ? "#166534" : "#991b1b" }}>
+        <span className={`text-xs font-medium shrink-0 ${safe ? "text-safe" : "text-alert"}`}>
           NH₃:
         </span>
-        <span className="text-sm font-bold" style={{ color: safe ? "#15803d" : "#dc2626" }}>
+        <span className={`text-sm font-bold ${safe ? "text-safe" : "text-alert"}`}>
           {currentVal.toFixed(2)} {UNIT}
         </span>
         <span
-          className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor: safe ? "#bbf7d0" : "#fecaca",
-            color: safe ? "#166534" : "#991b1b",
-          }}
+          className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+            safe ? "bg-safe/15 text-safe" : "bg-alert/15 text-alert"
+          }`}
         >
           {safe ? "Safe" : "Critical"}
         </span>

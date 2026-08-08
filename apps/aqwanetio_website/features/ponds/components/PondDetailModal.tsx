@@ -45,10 +45,10 @@ export default function PondDetailModal({
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-clip rounded-lg border border-gray-300 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-300 px-6 py-4">
+      <div className="neu-surface flex max-h-[90vh] w-full max-w-2xl flex-col overflow-clip p-px">
+        <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-navy">{pond.name}</h2>
+            <h2 className="text-xl font-semibold text-ink">{pond.name}</h2>
             <span
               className={`rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${
                 statusStyles[pond.status]
@@ -59,7 +59,7 @@ export default function PondDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-600 transition-colors hover:text-gray-900"
+            className="text-muted transition-colors hover:text-ink"
             aria-label="Close"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -72,10 +72,10 @@ export default function PondDetailModal({
           <PondChart readings={readings} predictions={predictions} />
         </div>
 
-        <div className="flex justify-end border-t border-gray-300 px-6 py-3">
+        <div className="flex justify-end border-t border-line px-6 py-3">
           <button
             onClick={onClose}
-            className="rounded bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy/90"
+            className="btn btn-ghost px-4 py-2 text-sm font-semibold"
           >
             {t("modal.close")}
           </button>

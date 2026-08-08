@@ -51,14 +51,14 @@ export default function MapPage() {
             className={[
               "absolute right-0 top-1/2 -translate-y-1/2 z-[1002]",
               "flex h-12 w-6 items-center justify-center",
-              "rounded-l-lg border border-r-0 border-gray-300",
-              "bg-white/90 shadow-md backdrop-blur-[4px]",
-              "transition-colors hover:bg-gray-50",
+              "rounded-l-xl border border-r-0 border-line",
+              "bg-surface shadow-[var(--shadow-raise-sm)] backdrop-blur-[4px]",
+              "transition-colors hover:bg-raised",
             ].join(" ")}
           >
             <svg
               className={[
-                "h-4 w-4 text-gray-600",
+                "h-4 w-4 text-muted",
                 "transition-transform duration-300",
                 panelsHidden ? "rotate-180" : "",
               ].join(" ")}

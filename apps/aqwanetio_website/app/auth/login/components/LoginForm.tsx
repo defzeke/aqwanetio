@@ -11,12 +11,12 @@ export default function LoginForm() {
   return (
     <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-900" htmlFor="email">
+        <label className="text-sm font-medium text-ink" htmlFor="email">
           {t("auth.email")}
         </label>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-            <svg className="h-4 w-4 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
             </svg>
           </div>
@@ -24,34 +24,34 @@ export default function LoginForm() {
             id="email"
             type="email"
             placeholder={t("auth.emailPlaceholder")}
-            className="w-full rounded border border-gray-300 bg-input-bg py-3 pl-[41px] pr-6 text-base text-gray-800 placeholder:text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent"
+            className="neu-input w-full rounded-lg py-3 pl-[41px] pr-6 text-base"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-900" htmlFor="password">
+          <label className="text-sm font-medium text-ink" htmlFor="password">
             {t("auth.password")}
           </label>
-          <Link href="#" className="text-xs font-semibold text-navy transition-colors hover:text-navy/80">
+          <Link href="#" className="text-xs font-semibold text-cyan transition-colors hover:text-cyan-light">
             {t("auth.forgotPassword")}
           </Link>
         </div>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-            <svg className="h-[21px] w-4 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="h-[21px] w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
           <input
             id="password"
             type={showPassword ? "text" : "password"}
-            className="w-full rounded border border-gray-300 bg-input-bg py-3 pl-[41px] pr-12 text-base text-gray-800 placeholder:text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent"
+            className="neu-input w-full rounded-lg py-3 pl-[41px] pr-12 text-base"
           />
           <button
             type="button"
-            className="absolute inset-y-0 right-3 flex items-center text-gray-800 hover:text-gray-600"
+            className="absolute inset-y-0 right-3 flex items-center text-muted hover:text-ink"
             onClick={() => setShowPassword(!showPassword)}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
@@ -73,16 +73,16 @@ export default function LoginForm() {
         <input
           id="remember"
           type="checkbox"
-          className="h-4 w-4 rounded border border-gray-300 bg-white"
+          className="h-4 w-4 rounded border border-line bg-surface accent-cyan"
         />
-        <label htmlFor="remember" className="text-xs font-semibold text-gray-600">
+        <label htmlFor="remember" className="text-xs font-semibold text-muted">
           {t("auth.rememberDevice")}
         </label>
       </div>
 
       <button
         type="submit"
-        className="flex w-full items-center justify-center gap-2 rounded bg-primary py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
+        className="btn btn-cyan h-11 w-full rounded-lg text-base font-semibold"
       >
         {t("auth.signIn")}
         <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

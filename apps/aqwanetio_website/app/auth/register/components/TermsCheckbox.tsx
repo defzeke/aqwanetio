@@ -17,15 +17,15 @@ export default function TermsCheckbox({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-[6px] h-5 w-5 shrink-0 rounded border border-gray-300 bg-white"
+        className="mt-[6px] h-5 w-5 shrink-0 rounded border border-line bg-surface accent-cyan"
       />
-      <label htmlFor="terms" className="text-base text-gray-600">
+      <label htmlFor="terms" className="text-base text-muted">
         {t("terms.prefix")}{" "}
-        <a href="#" className="text-teal-dark transition-colors hover:text-teal-dark/80">
+        <a href="#" className="text-cyan transition-colors hover:text-cyan-light">
           {t("footer.tos")}
         </a>{" "}
         {t("terms.and")}{" "}
-        <a href="#" className="text-teal-dark transition-colors hover:text-teal-dark/80">
+        <a href="#" className="text-cyan transition-colors hover:text-cyan-light">
           {t("footer.privacy")}
         </a>{" "}
         {t("terms.suffix")}
