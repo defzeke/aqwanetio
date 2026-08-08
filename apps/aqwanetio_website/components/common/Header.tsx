@@ -27,6 +27,9 @@ export default function Header() {
           <span className="h-8 w-8 overflow-hidden rounded">
             <img src="/dostasti-logo.png" alt="DOST-ASTI" className="h-full w-full object-contain" />
           </span>
+          <span className="h-8 w-8 overflow-hidden rounded">
+            <img src="/dost-logo.png" alt="DOST" className="h-full w-full object-contain" />
+          </span>
           <div className="flex flex-col leading-tight">
             <span className="text-xl font-bold text-navy">{t("header.brand")}</span>
             <span className="text-sm font-medium text-gray-600 sm:text-base"></span>
