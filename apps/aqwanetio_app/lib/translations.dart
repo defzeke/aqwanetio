@@ -40,7 +40,7 @@ final _en = {
 
 final _fil = {
   'header': {'brand': 'DOST-ASTI', 'subtitle': 'Intelihensiya sa Akwakultura', 'map': 'Mapa', 'docs': 'Dokumentasyon', 'signIn': 'Mag-sign In', 'register': 'Magrehistro', 'signOut': 'Mag-sign Out'},
-  'nav': {'map': 'Mapa', 'ponds': 'Mga Pond'},
+  'nav': {'map': 'Mapa', 'ponds': 'Mga Sapa'},
   'status': {'safe': 'Ligtas', 'warning': 'Babala', 'toxic': 'Nakakalason', 'critical': 'Kritikal'},
   'weather': {'partlyCloudy': 'Bahagyang Maulap'},
   'table': {'time': 'Oras', 'forecast': 'Taya', 'predictedAmmonia': 'Inaasahang NH₃', 'range': 'Saklaw', 'bias': 'Bias'},
