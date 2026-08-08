@@ -43,7 +43,7 @@ export default function SettingsDropdown() {
       </button>
 
       {open && (
-        <div className="neu-surface absolute right-0 top-full z-50 mt-3 w-64 p-4">
+        <div className="neu-card absolute right-0 top-full z-50 mt-3 w-64 p-4">
           <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">{t("settings.title")}</h3>
 
           <div className="space-y-4">

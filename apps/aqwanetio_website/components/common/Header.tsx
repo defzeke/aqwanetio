@@ -32,98 +32,91 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="relative z-50 flex h-16 shrink-0 items-center justify-between border-b border-line bg-surface px-4 sm:px-6">
-      <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="neu-inset h-8 w-8 overflow-hidden rounded-lg p-1">
-            <img src="/dostasti-logo.png" alt="DOST-ASTI" className="h-full w-full object-contain" />
-          </span>
-          <span className="neu-inset h-8 w-8 overflow-hidden rounded-lg p-1">
-            <img src="/dost-logo.png" alt="DOST" className="h-full w-full object-contain" />
-          </span>
-          <div className="flex flex-col leading-tight">
-            <span className="text-xl font-bold text-ink">{t("header.brand")}</span>
-            <span className="text-sm font-medium text-muted sm:text-base"></span>
-          </div>
-        </Link>
+    <div className="pointer-events-none fixed inset-x-0 top-3 z-[1003] flex flex-col items-center px-3 sm:px-6">
+      <header className="pointer-events-auto flex h-16 w-full max-w-[1240px] items-center justify-between gap-4 rounded-full border border-line bg-surface/85 px-4 shadow-[var(--shadow-raise)] backdrop-blur-xl sm:px-5">
+        <div className="flex min-w-0 items-center gap-5">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="neu-inset h-8 w-8 shrink-0 overflow-hidden rounded-lg p-1">
+              <img src="/dostasti-logo.png" alt="DOST-ASTI" className="h-full w-full object-contain" />
+            </span>
+            <span className="neu-inset hidden h-8 w-8 shrink-0 overflow-hidden rounded-lg p-1 sm:block">
+              <img src="/dost-logo.png" alt="DOST" className="h-full w-full object-contain" />
+            </span>
+            <span className="truncate text-xl font-bold text-ink">{t("header.brand")}</span>
+          </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`pb-[6px] text-sm font-medium transition-colors ${
-                  isActive
-                    ? "border-b-2 border-cyan font-bold text-ink"
-                    : "font-medium text-muted hover:text-ink"
-                }`}
-              >
-                {t(link.labelKey)}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Main navigation"
+          >
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "border-cyan/25 bg-cyan/15 text-cyan"
+                      : "border-transparent text-muted hover:text-ink"
+                  }`}
+                >
+                  {t(link.labelKey)}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
-      <div className="hidden items-center gap-2 md:flex">
-        <SettingsDropdown />
-        {user ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted">{user.name}</span>
-            <button
-              onClick={logout}
-              className="btn btn-ghost px-4 py-2 text-sm text-muted"
-            >
-              Sign Out
-            </button>
-          </div>
-        ) : (
-          <>
-            <Link
-              href="/auth/login"
-              className="btn btn-ghost px-4 py-2 text-sm text-ink"
-            >
-              {t("header.signIn")}
-            </Link>
-            <Link
-              href="/auth/register"
-              className="btn btn-cyan px-4 py-2 text-sm"
-            >
-              {t("header.register")}
-            </Link>
-          </>
-        )}
-      </div>
-
-      <button
-        type="button"
-        className="btn btn-ghost p-2 text-muted md:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label={mobileOpen ? "Close menu" : "Open menu"}
-        aria-expanded={mobileOpen}
-      >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          {mobileOpen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <div className="hidden items-center gap-2 md:flex">
+          <SettingsDropdown />
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted">{user.name}</span>
+              <button onClick={logout} className="btn btn-ghost px-4 py-2 text-sm text-muted">
+                {t("header.signOut")}
+              </button>
+            </div>
           ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <>
+              <Link href="/auth/login" className="btn btn-ghost px-4 py-2 text-sm text-ink">
+                {t("header.signIn")}
+              </Link>
+              <Link href="/auth/register" className="btn btn-cyan px-4 py-2 text-sm">
+                {t("header.register")}
+              </Link>
+            </>
           )}
-        </svg>
-      </button>
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-ghost p-2 text-muted md:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            {mobileOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+      </header>
 
       {mobileOpen && (
-        <div className="absolute left-0 right-0 top-16 z-50 border-b border-line bg-surface shadow-[var(--shadow-raise)] md:hidden">
-          <div className="space-y-1 px-4 py-3">
+        <div className="neu-card pointer-events-auto mt-2 w-full max-w-[1240px] p-4 md:hidden">
+          <div className="space-y-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive ? "bg-raised font-bold text-ink" : "text-muted hover:bg-raised"
+                  className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive ? "bg-cyan/15 font-bold text-cyan" : "text-muted hover:bg-raised"
                   }`}
                   onClick={() => setMobileOpen(false)}
                 >
@@ -135,14 +128,14 @@ export default function Header() {
             {user ? (
               <button
                 onClick={() => { logout(); setMobileOpen(false); }}
-                className="block w-full rounded px-3 py-2 text-left text-sm font-medium text-muted hover:bg-raised"
+                className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted hover:bg-raised"
               >
                 {t("header.signOut")} ({user.name})
               </button>
             ) : (
               <>
-                <Link href="/auth/login" className="block rounded px-3 py-2 text-sm font-medium text-muted hover:bg-raised" onClick={() => setMobileOpen(false)}>{t("header.signIn")}</Link>
-                <Link href="/auth/register" className="block rounded px-3 py-2 text-sm font-medium text-muted hover:bg-raised" onClick={() => setMobileOpen(false)}>{t("header.register")}</Link>
+                <Link href="/auth/login" className="block rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-raised" onClick={() => setMobileOpen(false)}>{t("header.signIn")}</Link>
+                <Link href="/auth/register" className="block rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-raised" onClick={() => setMobileOpen(false)}>{t("header.register")}</Link>
               </>
             )}
             <hr className="my-2 border-line" />
@@ -201,6 +194,6 @@ export default function Header() {
           </div>
         </div>
       )}
-    </header> 
+    </div>
   );
 }

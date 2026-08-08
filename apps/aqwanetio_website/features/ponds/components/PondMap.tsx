@@ -1,9 +1,10 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { pondsService } from "../services";
+import { useTranslation } from "@/lib/translations";
 
 const statusColors: Record<string, string> = {
   safe: "#22c55e",
@@ -25,6 +26,8 @@ const PondMap = memo(function PondMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(6);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const update = () => {
@@ -45,12 +48,16 @@ const PondMap = memo(function PondMap({
     const phBounds = L.latLngBounds([3.0, 113.0], [22.0, 128.0]);
 
     const map = L.map(mapRef.current, {
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: false,
       maxBounds: phBounds,
       maxBoundsViscosity: 1.0,
       minZoom: 6,
     }).setView([14.5, 121.5], 8);
+
+    const syncZoom = () => setZoom(map.getZoom());
+    map.on("zoomend", syncZoom);
+    syncZoom();
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
@@ -91,6 +98,31 @@ const PondMap = memo(function PondMap({
   return (
     <div className="relative h-full w-full">
       <div ref={mapRef} className="h-full w-full" />
+      <div className="absolute left-3 top-1/2 z-[1000] flex -translate-y-1/2 flex-col rounded-2xl border border-line bg-surface/85 shadow-[var(--shadow-raise-sm)] backdrop-blur-[4px]">
+        <button
+          type="button"
+          onClick={() => mapInstanceRef.current?.zoomIn()}
+          disabled={zoom >= 18}
+          aria-label={t("ui.zoomIn")}
+          className="flex h-10 w-10 items-center justify-center rounded-t-2xl text-muted transition-colors hover:bg-raised hover:text-ink disabled:opacity-40"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
+        <div className="mx-2 border-t border-line" />
+        <button
+          type="button"
+          onClick={() => mapInstanceRef.current?.zoomOut()}
+          disabled={zoom <= 6}
+          aria-label={t("ui.zoomOut")}
+          className="flex h-10 w-10 items-center justify-center rounded-b-2xl text-muted transition-colors hover:bg-raised hover:text-ink disabled:opacity-40"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+          </svg>
+        </button>
+      </div>
       <div
         ref={overlayRef}
         className="pointer-events-none absolute inset-0 transition-opacity duration-1000"

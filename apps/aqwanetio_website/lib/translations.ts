@@ -25,6 +25,12 @@ const dict = {
       language: "Language",
       notifications: "Notifications",
     },
+    ui: {
+      collapse: "Collapse",
+      expand: "Expand",
+      zoomIn: "Zoom in",
+      zoomOut: "Zoom out",
+    },
     mapLegend: {
       title: "Threshold Guidelines",
       safeLabel: "Safe:",
@@ -124,6 +130,12 @@ const dict = {
       darkMode: "Madilim na Mode",
       language: "Wika",
       notifications: "Mga Abiso",
+    },
+    ui: {
+      collapse: "I-collapse",
+      expand: "I-expand",
+      zoomIn: "Mag-zoom in",
+      zoomOut: "Mag-zoom out",
     },
     mapLegend: {
       title: "Mga Alituntunin sa Limitasyon",

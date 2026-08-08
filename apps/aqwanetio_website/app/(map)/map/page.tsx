@@ -29,7 +29,7 @@ export default function MapPage() {
             className={[
               "absolute inset-y-0 right-0 z-[1001]",
               "flex flex-col items-end justify-between",
-              "py-4 pr-8",        
+              "pt-[84px] pb-4 pr-3 sm:pr-5",
               "pointer-events-none",
               "transition-transform duration-300 ease-in-out",
               panelsHidden ? "translate-x-full" : "",

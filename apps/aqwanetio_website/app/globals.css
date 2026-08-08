@@ -106,6 +106,15 @@ html[data-theme="light"] {
     box-shadow: var(--shadow-press);
   }
 
+  .neu-card {
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-raise);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
   .neu-input {
     background: var(--color-input-bg);
     border: 1px solid var(--color-line);
@@ -138,6 +147,10 @@ html[data-theme="light"] {
     box-shadow: var(--shadow-press-sm);
     transform: translateY(1px);
   }
+  .btn:focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
 
   .btn-cyan {
     background: linear-gradient(180deg, var(--color-cyan-light), var(--color-cyan) 45%, var(--color-cyan-dark));
@@ -169,5 +182,15 @@ html[data-theme="light"] {
   }
   .btn-ghost:hover {
     background: var(--color-raised);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

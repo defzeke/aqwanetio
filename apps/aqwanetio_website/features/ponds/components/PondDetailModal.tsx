@@ -45,7 +45,7 @@ export default function PondDetailModal({
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="neu-surface flex max-h-[90vh] w-full max-w-2xl flex-col overflow-clip p-px">
+      <div className="neu-card flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-ink">{pond.name}</h2>
