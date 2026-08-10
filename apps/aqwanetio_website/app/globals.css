@@ -54,17 +54,17 @@ html[data-theme="light"] {
   --color-chart-grid: #e5e7eb;
   --color-band: rgba(217, 119, 6, 0.2);
   --shadow-raise:
-    8px 8px 16px #c9cfd8,
-    -8px -8px 16px #ffffff;
+    8px 8px 16px rgba(76, 88, 106, 0.22),
+    -8px -8px 16px rgba(255, 255, 255, 0.45);
   --shadow-raise-sm:
-    4px 4px 10px #c9cfd8,
-    -4px -4px 10px #ffffff;
+    4px 4px 10px rgba(76, 88, 106, 0.2),
+    -4px -4px 10px rgba(255, 255, 255, 0.4);
   --shadow-press:
-    inset 6px 6px 12px #c9cfd8,
-    inset -6px -6px 12px #ffffff;
+    inset 6px 6px 12px rgba(76, 88, 106, 0.18),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.5);
   --shadow-press-sm:
-    inset 3px 3px 7px #c9cfd8,
-    inset -3px -3px 7px #ffffff;
+    inset 3px 3px 7px rgba(76, 88, 106, 0.16),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.45);
 }
 
 @layer base {
