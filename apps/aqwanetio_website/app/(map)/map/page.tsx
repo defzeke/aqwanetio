@@ -25,7 +25,6 @@ export default function MapPage() {
       <div className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <PondMap onPondSelect={onPondSelect} />
-          {/* Sliding group — translate leaves exactly w-10 (button) peeking out */}
           <div
             className={[
               "absolute inset-y-0 right-0 z-[1001]",
@@ -35,7 +34,6 @@ export default function MapPage() {
               panelsHidden ? "translate-x-[calc(100%-2.5rem)]" : "",
             ].join(" ")}
           >
-            {/* Button column: stretches to cards height, centers button between them */}
             <div className="flex items-center pt-[84px] pb-4 pointer-events-none">
               <button
                 type="button"
@@ -64,7 +62,6 @@ export default function MapPage() {
               </button>
             </div>
 
-            {/* Cards column */}
             <div className="flex flex-col gap-3 pt-[84px] pb-4 pr-3 sm:pr-5 pointer-events-none">
               <div className="pointer-events-auto">
                 <MapLegend />
