@@ -11,15 +11,20 @@ export default function TermsCheckbox({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-start gap-4 pb-2 pt-1">
+    <label className="flex cursor-pointer select-none items-start gap-3">
       <input
         id="terms"
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-[6px] h-5 w-5 shrink-0 rounded border border-line bg-surface accent-cyan"
+        className="peer sr-only"
       />
-      <label htmlFor="terms" className="text-base text-muted">
+      <span className="mt-[2px] flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-line bg-input-bg transition-colors duration-150 peer-checked:border-cyan peer-checked:bg-cyan peer-focus-visible:ring-2 peer-focus-visible:ring-cyan/50">
+        <svg className="h-3 w-3 text-[#02131c] opacity-0 transition-opacity duration-150 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </span>
+      <span className="text-base text-muted">
         {t("terms.prefix")}{" "}
         <a href="#" className="text-cyan transition-colors hover:text-cyan-light">
           {t("footer.tos")}
@@ -29,7 +34,7 @@ export default function TermsCheckbox({
           {t("footer.privacy")}
         </a>{" "}
         {t("terms.suffix")}
-      </label>
-    </div>
+      </span>
+    </label>
   );
 }

@@ -9,13 +9,13 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
+    <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-ink" htmlFor="email">
           {t("auth.email")}
         </label>
         <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+          <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
             <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
             </svg>
@@ -23,8 +23,9 @@ export default function LoginForm() {
           <input
             id="email"
             type="email"
+            autoComplete="email"
             placeholder={t("auth.emailPlaceholder")}
-            className="neu-input h-12 w-full rounded-lg pl-[41px] pr-6 text-base"
+            className="neu-input h-12 w-full rounded-xl pl-[41px] pr-4 text-base"
           />
         </div>
       </div>
@@ -39,7 +40,7 @@ export default function LoginForm() {
           </Link>
         </div>
         <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+          <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
             <svg className="h-[21px] w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
@@ -47,7 +48,8 @@ export default function LoginForm() {
           <input
             id="password"
             type={showPassword ? "text" : "password"}
-            className="neu-input h-12 w-full rounded-lg pl-[41px] pr-12 text-base"
+            autoComplete="current-password"
+            className="neu-input h-12 w-full rounded-xl pl-[41px] pr-12 text-base"
           />
           <button
             type="button"
@@ -69,20 +71,21 @@ export default function LoginForm() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
-          id="remember"
-          type="checkbox"
-          className="h-[18px] w-[18px] rounded border border-line bg-surface accent-cyan"
-        />
-        <label htmlFor="remember" className="text-sm font-medium text-muted">
+      <label className="flex cursor-pointer select-none items-center gap-2.5">
+        <input id="remember" type="checkbox" className="peer sr-only" />
+        <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border border-line bg-input-bg transition-colors duration-150 peer-checked:border-cyan peer-checked:bg-cyan peer-focus-visible:ring-2 peer-focus-visible:ring-cyan/50">
+          <svg className="h-3 w-3 text-[#02131c] opacity-0 transition-opacity duration-150 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </span>
+        <span className="text-sm font-medium text-muted">
           {t("auth.rememberDevice")}
-        </label>
-      </div>
+        </span>
+      </label>
 
       <button
         type="submit"
-        className="btn btn-cyan h-12 w-full rounded-lg text-base font-bold"
+        className="btn btn-cyan btn-shine h-12 w-full rounded-xl text-base font-bold"
       >
         {t("auth.signIn")}
         <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -61,6 +61,9 @@ const dict = {
       noAccount: "Don't have an account?",
       hasAccount: "Already have an account?",
     },
+    authShell: {
+      tagline: "Real-time water quality monitoring and ammonia forecasting for Philippine aquaculture.",
+    },
     auth: {
       signIn: "Sign In",
       loginDesc: "Access the Intelligence Portal with your authorized credentials.",
@@ -75,7 +78,6 @@ const dict = {
       registerDesc: "Register your organization to the national aquaculture portal.",
       registerButton: "Register Account",
       completeRegistration: "Complete Registration",
-      version: "DOST-ASTI Institutional Portal \u2022 Version 2.4.0",
       fullName: "Full Name",
       fullNamePlaceholder: "Juan Dela Cruz",
       organization: "Organization/Agency",
@@ -167,6 +169,9 @@ const dict = {
       noAccount: "Wala pang account?",
       hasAccount: "May account na?",
     },
+    authShell: {
+      tagline: "Real-time na pagmamanman ng kalidad ng tubig at pagtaya ng amonya para sa aquaculture ng Pilipinas.",
+    },
     auth: {
       signIn: "Mag-sign In",
       loginDesc: "I-access ang Intelligence Portal gamit ang iyong awtorisadong kredensyal.",
@@ -181,7 +186,6 @@ const dict = {
       registerDesc: "Irehistro ang iyong organisasyon sa pambansang aquaculture portal.",
       registerButton: "Magrehistro ng Account",
       completeRegistration: "Kumpletuhin ang Pagrehistro",
-      version: "DOST-ASTI Institutional Portal \u2022 Bersyon 2.4.0",
       fullName: "Buong Pangalan",
       fullNamePlaceholder: "Juan Dela Cruz",
       organization: "Organisasyon/Ahensya",

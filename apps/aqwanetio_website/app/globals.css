@@ -167,6 +167,14 @@ html[data-theme="light"] {
       var(--shadow-press-sm),
       0 0 0 3px rgba(0, 174, 239, 0.18);
   }
+  .neu-input:-webkit-autofill,
+  .neu-input:-webkit-autofill:hover,
+  .neu-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-input-bg) inset;
+    -webkit-text-fill-color: var(--color-ink);
+    caret-color: var(--color-ink);
+    transition: background-color 9999s ease-out;
+  }
 
   .neu-tile {
     background: linear-gradient(180deg, var(--color-raised), var(--color-surface));
@@ -231,6 +239,28 @@ html[data-theme="light"] {
   }
   .btn-ghost:hover {
     background: var(--color-raised);
+  }
+
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+    pointer-events: none;
+  }
+  .btn-shine:hover::after {
+    transform: translateX(120%);
   }
 }
 

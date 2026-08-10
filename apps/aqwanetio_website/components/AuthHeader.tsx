@@ -11,7 +11,8 @@ export default function AuthHeader({ mode }: AuthHeaderProps) {
   const { t } = useTranslation();
   return (
     <header className="flex h-16 w-full shrink-0 items-center justify-between border-b border-line bg-surface px-4 sm:px-6">
-      <div className="flex items-center gap-4">
+      <div className="mx-auto flex h-full w-full max-w-5xl items-center justify-between">
+        <div className="flex items-center gap-4">
         <Link
           href="/"
           className="btn btn-ghost flex items-center gap-1.5 px-2 py-1 text-sm font-semibold text-muted"
@@ -26,6 +27,13 @@ export default function AuthHeader({ mode }: AuthHeaderProps) {
             <img
               src="/dostasti-logo.png"
               alt="DOST-ASTI"
+              className="h-full w-full object-contain"
+            />
+          </span>
+          <span className="neu-inset hidden h-8 w-8 overflow-hidden rounded-lg p-1 md:block">
+            <img
+              src="/dost-logo.png"
+              alt="DOST"
               className="h-full w-full object-contain"
             />
           </span>
@@ -58,6 +66,7 @@ export default function AuthHeader({ mode }: AuthHeaderProps) {
             </Link>
           </>
         )}
+      </div>
       </div>
     </header>
   );
