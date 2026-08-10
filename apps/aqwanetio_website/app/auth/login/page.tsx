@@ -14,11 +14,11 @@ export default function LoginPage() {
       <AuthHeader mode="login" />
 
       <main className="flex flex-1 items-center justify-center px-4 py-2">
-        <div className="neu-surface w-full max-w-[1100px] overflow-clip p-px">
-          <div className="p-6">
+        <div className="neu-panel w-full max-w-[1100px] overflow-clip p-px">
+          <div className="p-6 sm:p-8">
             <div className="pb-4">
-              <h1 className="text-2xl font-semibold text-ink">{t("auth.signIn")}</h1>
-              <div className="mt-2.5 h-[3px] w-10 rounded-full bg-gradient-to-r from-cyan to-gold" />
+              <h1 className="text-3xl font-bold tracking-tight text-ink">{t("auth.signIn")}</h1>
+              <div className="mt-2.5 h-1 w-12 rounded-full bg-gradient-to-r from-cyan to-gold" />
               <p className="mt-4 text-base text-muted">
                 {t("auth.loginDesc")}
               </p>
@@ -26,8 +26,8 @@ export default function LoginPage() {
 
             <LoginForm />
 
-            <div className="pt-3">
-              <div className="border-t border-line py-3 text-center">
+            <div className="pt-4">
+              <div className="border-t border-line py-4 text-center">
                 <Link href="/map" className="text-base text-cyan transition-colors hover:text-cyan-light">
                   {t("auth.continueAsGuest")}
                 </Link>

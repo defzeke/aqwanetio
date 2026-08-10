@@ -24,7 +24,7 @@ export default function LoginForm() {
             id="email"
             type="email"
             placeholder={t("auth.emailPlaceholder")}
-            className="neu-input w-full rounded-lg py-3 pl-[41px] pr-6 text-base"
+            className="neu-input h-12 w-full rounded-lg pl-[41px] pr-6 text-base"
           />
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function LoginForm() {
           <label className="text-sm font-medium text-ink" htmlFor="password">
             {t("auth.password")}
           </label>
-          <Link href="#" className="text-xs font-semibold text-cyan transition-colors hover:text-cyan-light">
+          <Link href="#" className="text-sm font-medium text-cyan transition-colors hover:text-cyan-light">
             {t("auth.forgotPassword")}
           </Link>
         </div>
@@ -47,7 +47,7 @@ export default function LoginForm() {
           <input
             id="password"
             type={showPassword ? "text" : "password"}
-            className="neu-input w-full rounded-lg py-3 pl-[41px] pr-12 text-base"
+            className="neu-input h-12 w-full rounded-lg pl-[41px] pr-12 text-base"
           />
           <button
             type="button"
@@ -73,16 +73,16 @@ export default function LoginForm() {
         <input
           id="remember"
           type="checkbox"
-          className="h-4 w-4 rounded border border-line bg-surface accent-cyan"
+          className="h-[18px] w-[18px] rounded border border-line bg-surface accent-cyan"
         />
-        <label htmlFor="remember" className="text-xs font-semibold text-muted">
+        <label htmlFor="remember" className="text-sm font-medium text-muted">
           {t("auth.rememberDevice")}
         </label>
       </div>
 
       <button
         type="submit"
-        className="btn btn-cyan h-11 w-full rounded-lg text-base font-semibold"
+        className="btn btn-cyan h-12 w-full rounded-lg text-base font-bold"
       >
         {t("auth.signIn")}
         <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

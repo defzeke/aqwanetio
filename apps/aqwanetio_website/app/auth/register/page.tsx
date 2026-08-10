@@ -19,7 +19,7 @@ export default function RegisterPage() {
       <AuthHeader mode="register" />
 
       <main className="flex flex-1 items-center justify-center px-4 py-2">
-        <div className="neu-surface w-full max-w-[1100px] overflow-clip p-px">
+        <div className="neu-panel w-full max-w-[1100px] overflow-clip p-px">
           <div className="p-6">
             <div className="pb-3">
               <p className="text-base font-semibold text-ink">{t("auth.createAccount")}</p>
