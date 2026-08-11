@@ -40,6 +40,9 @@ class _MapScreenState extends State<MapScreen> {
             initialCenter: const LatLng(14.5, 121.5),
             initialZoom: 8,
             minZoom: 6,
+            cameraConstraint: CameraConstraint.containCenter(
+              bounds: LatLngBounds(LatLng(4.5, 116.5), LatLng(21.2, 127.0)),
+            ),
           ),
           children: [
             TileLayer(
