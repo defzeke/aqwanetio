@@ -25,6 +25,7 @@ String t(String path, [Map<String, String>? vars]) {
 final _en = {
   'header': {'brand': 'DOST-ASTI', 'subtitle': 'Aquaculture Intelligence', 'map': 'Map', 'docs': 'Documentation', 'signIn': 'Sign In', 'register': 'Register', 'signOut': 'Sign Out'},
   'nav': {'map': 'Map', 'ponds': 'Ponds'},
+  'search': {'hint': 'Search for a location or pond...', 'empty': 'No ponds match your search'},
   'status': {'safe': 'Safe', 'warning': 'Warning', 'toxic': 'Toxic', 'critical': 'Critical'},
   'weather': {'partlyCloudy': 'Partly Cloudy'},
   'table': {'time': 'Time', 'forecast': 'Forecast', 'predictedAmmonia': 'Predicted NH₃', 'range': 'Range', 'bias': 'Bias'},
@@ -41,6 +42,7 @@ final _en = {
 final _fil = {
   'header': {'brand': 'DOST-ASTI', 'subtitle': 'Intelihensiya sa Akwakultura', 'map': 'Mapa', 'docs': 'Dokumentasyon', 'signIn': 'Mag-sign In', 'register': 'Magrehistro', 'signOut': 'Mag-sign Out'},
   'nav': {'map': 'Mapa', 'ponds': 'Mga Sapa'},
+  'search': {'hint': 'Maghanap ng sapa o lokasyon...', 'empty': 'Walang sapa na tugma sa iyong paghahanap'},
   'status': {'safe': 'Ligtas', 'warning': 'Babala', 'toxic': 'Nakakalason', 'critical': 'Kritikal'},
   'weather': {'partlyCloudy': 'Bahagyang Maulap'},
   'table': {'time': 'Oras', 'forecast': 'Taya', 'predictedAmmonia': 'Inaasahang NH₃', 'range': 'Saklaw', 'bias': 'Bias'},

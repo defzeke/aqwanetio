@@ -17,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -27,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     authProvider.removeListener(_onAuthChange);
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -141,13 +144,61 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPondsTab() {
-    final ponds = mockPonds;
+    final ponds = mockPonds.where((p) => p.name.toLowerCase().contains(_searchQuery)).toList();
     final topInset = MediaQuery.paddingOf(context).top;
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16, topInset + _headerZone, 16, 110),
-      itemCount: ponds.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (_, i) => PondCard(pond: ponds[i], onTap: () => _openPondDetail(ponds[i])),
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(16, topInset + _headerZone - 4, 16, 0),
+          child: Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: TextField(
+              controller: _searchCtrl,
+              onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+              decoration: InputDecoration(
+                hintText: t('search.hint') == 'search.hint'
+                    ? 'Maghanap ng sapa o lokasyon...' // ponytail: t() key-miss fallback
+                    : t('search.hint'),
+                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+                suffixIcon: _searchQuery.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close, size: 18, color: AppColors.textMuted),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ponds.isEmpty
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.search_off, size: 40, color: AppColors.gray300),
+                    const SizedBox(height: 8),
+                    Text(t('search.empty'), style: const TextStyle(fontSize: 14, color: AppColors.textMuted)),
+                  ]),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
+                  itemCount: ponds.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  itemBuilder: (_, i) => PondCard(pond: ponds[i], onTap: () => _openPondDetail(ponds[i])),
+                ),
+        ),
+      ],
     );
   }
 }
