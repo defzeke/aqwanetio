@@ -64,8 +64,8 @@ int _seedFor(String pondId) {
   return m != null ? int.parse(m.group(0)!) : 1;
 }
 
-List<Reading> _buildReadings(int seed, int count) {
-  final now = DateTime.now();
+List<Reading> _buildReadings(int seed, int count, {DateTime? anchor}) {
+  final now = anchor ?? DateTime.now();
   return List.generate(count, (i) {
     final phase = seed * 1.3;
     final baseAmmonia = 0.25 + sin((i + phase) / 6) * 0.15;
@@ -107,4 +107,8 @@ List<Reading> getReadings(String pondId, {int limit = 48}) {
 List<Prediction> getPredictions(String pondId) {
   _predictionsCache.putIfAbsent(pondId, () => _buildPredictions(_seedFor(pondId)));
   return _predictionsCache[pondId]!;
+}
+
+List<Reading> getHistoricalReadings(String pondId, DateTime anchor, {int count = 24}) {
+  return _buildReadings(_seedFor(pondId), count, anchor: anchor);
 }
