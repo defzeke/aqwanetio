@@ -14,5 +14,6 @@ export interface StlDecomposition {
 
 export interface PredictionsService {
   getPrediction(pondId: string): Prediction[];
+  getPredictionAt(pondId: string, endTs: number): Prediction[];
   getStlDecomposition(pondId: string): StlDecomposition;
 }

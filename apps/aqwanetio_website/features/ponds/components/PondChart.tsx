@@ -3,6 +3,7 @@
 import { useMemo, useRef, useCallback, useState } from "react";
 import type { Reading } from "@/features/readings/services/readings.service";
 import type { Prediction } from "@/features/predictions/services/predictions.service";
+import { useTranslation } from "@/lib/translations";
 
 interface Props {
   readings: Reading[];
@@ -81,6 +82,7 @@ function SvgTooltip({ d }: { d: TooltipData }) {
 export default function PondChart({ readings, predictions }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const { t } = useTranslation();
 
   const history = useMemo(() => [...readings].reverse(), [readings]);
 
@@ -200,7 +202,7 @@ export default function PondChart({ readings, predictions }: Props) {
   return (
     <div className="space-y-4">
       {/* Chart */}
-      <div className="neu-surface-sm p-3 overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border border-line bg-surface p-4 shadow-[var(--shadow-raise-sm)]">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${W} ${H}`}
@@ -221,7 +223,7 @@ export default function PondChart({ readings, predictions }: Props) {
                 stroke="var(--color-alert)" strokeWidth={1.5} strokeDasharray="6 3" />
               <text x={PAD.left + iW - 4} y={dangerY - 4}
                 fontSize={10} fill="var(--color-alert)" textAnchor="end">
-                Critical {DANGER} ppm
+                {t("modal.criticalLine", { value: DANGER })}
               </text>
             </>
           )}
@@ -229,6 +231,26 @@ export default function PondChart({ readings, predictions }: Props) {
           {/* Confidence band (ammonia forecast) */}
           {bandPath && (
             <path d={bandPath} fill="var(--color-band)" stroke="none" />
+          )}
+          {upperPts.length > 1 && (
+            <polyline
+              points={polyline(upperPts)}
+              fill="none"
+              stroke="var(--color-band-line)"
+              strokeWidth={1.25}
+              strokeDasharray="2 3"
+              opacity={0.6}
+            />
+          )}
+          {lowerPts.length > 1 && (
+            <polyline
+              points={polyline(lowerPts)}
+              fill="none"
+              stroke="var(--color-band-line)"
+              strokeWidth={1.25}
+              strokeDasharray="2 3"
+              opacity={0.6}
+            />
           )}
 
           {separatorX !== null && (
@@ -284,16 +306,25 @@ export default function PondChart({ readings, predictions }: Props) {
             </text>
           ))}
 
-          {/* Legend */}
-          <g transform={`translate(${PAD.left + 4}, ${PAD.top + 4})`} pointerEvents="none">
+          {/* Legend chip */}
+          <g
+            transform={`translate(${PAD.left + 4}, ${PAD.top + 4})`}
+            pointerEvents="none"
+          >
+            <rect x={-8} y={-6} width={96} height={36} rx={8}
+              fill="var(--color-surface)" stroke="var(--color-line)" strokeWidth={1} opacity={0.9} />
             <line x1={0} y1={6} x2={18} y2={6} stroke={NH3_COLOR} strokeWidth={2} />
             <circle cx={9} cy={6} r={3} fill={NH3_COLOR} />
-            <text x={22} y={10} fontSize={10} fill="var(--color-ink)">NH₃</text>
+            <text x={22} y={10} fontSize={10} fontWeight="600" fill="var(--color-ink)">
+              {t("modal.ammonia")}
+            </text>
             {forecastPts.length > 0 && (
-              <g transform="translate(0, 16)">
+              <g transform="translate(0, 18)">
                 <line x1={0} y1={6} x2={18} y2={6}
                   stroke={NH3_COLOR} strokeWidth={2} strokeDasharray="6 3" opacity={0.7} />
-                <text x={22} y={10} fontSize={10} fill="var(--color-ink)">Forecast</text>
+                <text x={22} y={10} fontSize={10} fontWeight="600" fill="var(--color-ink)">
+                  {t("modal.forecastLegend")}
+                </text>
               </g>
             )}
           </g>
@@ -314,7 +345,7 @@ export default function PondChart({ readings, predictions }: Props) {
 
       {/* Current value tile */}
       <div
-        className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 ${
+        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 ${
           safe ? "border-safe/30 bg-safe/10" : "border-alert/30 bg-alert/10"
         }`}
       >
@@ -322,7 +353,7 @@ export default function PondChart({ readings, predictions }: Props) {
           className={`h-2.5 w-2.5 shrink-0 rounded-full ${safe ? "bg-safe" : "bg-alert"}`}
         />
         <span className={`text-xs font-medium shrink-0 ${safe ? "text-safe" : "text-alert"}`}>
-          NH₃:
+          {t("modal.current")} NH₃:
         </span>
         <span className={`text-sm font-bold ${safe ? "text-safe" : "text-alert"}`}>
           {currentVal.toFixed(2)} {UNIT}
@@ -332,7 +363,7 @@ export default function PondChart({ readings, predictions }: Props) {
             safe ? "bg-safe/15 text-safe" : "bg-alert/15 text-alert"
           }`}
         >
-          {safe ? "Safe" : "Critical"}
+          {safe ? t("modal.safe") : t("modal.critical")}
         </span>
       </div>
     </div>
