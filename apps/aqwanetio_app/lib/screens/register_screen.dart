@@ -3,7 +3,7 @@ import '../translations.dart';
 import '../theme.dart';
 import '../main.dart';
 import '../widgets/auth_header.dart';
-import '../widgets/auth_footer.dart';
+import '../widgets/gradient_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -26,64 +26,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const AuthHeader(isLogin: false),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Form(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(t('auth.createAccount'), style: const TextStyle(fontSize: 16, color: AppColors.navy)),
-                        const SizedBox(height: 4),
-                        Text(t('auth.registerDesc'), style: const TextStyle(fontSize: 16, color: AppColors.textMuted)),
-                        const SizedBox(height: 16),
-                        Row(children: [
-                          Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 1 ? AppColors.tealDark : AppColors.border, borderRadius: BorderRadius.circular(2)))),
-                          const SizedBox(width: 8),
-                          Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 2 ? AppColors.tealDark : AppColors.border, borderRadius: BorderRadius.circular(2)))),
-                        ]),
-                        const SizedBox(height: 16),
-                        if (_step == 1) _stepOne(),
-                        if (_step == 2) _stepTwo(),
-                        const SizedBox(height: 8),
-                        _termsCheckbox(),
-                        const SizedBox(height: 16),
-                        if (_step == 1)
-                          SizedBox(
-                            width: double.infinity, height: 44,
-                            child: ElevatedButton(
-                              onPressed: _termsAccepted ? () => setState(() => _step = 2) : null,
-                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                Text(t('auth.registerButton')),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.arrow_forward, size: 16),
-                              ]),
-                            ),
-                          ),
-                        if (_step == 2)
-                          SizedBox(
-                            width: double.infinity, height: 44,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                await authProvider.register('', '', '');
-                                if (context.mounted) Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
-                              },
-                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                Text(t('auth.completeRegistration')),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.arrow_forward, size: 16),
-                              ]),
-                            ),
-                          ),
-                        const SizedBox(height: 16),
-                        Center(child: Text(t('auth.version'), style: const TextStyle(fontSize: 14, color: AppColors.textMuted))),
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: [BoxShadow(color: AppColors.navy.withValues(alpha: 0.06), blurRadius: 24, offset: const Offset(0, 8))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(t('auth.createAccount'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.navy)),
+                            const SizedBox(height: 8),
+                            Text(t('auth.registerDesc'), style: const TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.5)),
+                            const SizedBox(height: 20),
+                            Row(children: [
+                              Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 1 ? AppColors.tealDark : AppColors.border, borderRadius: BorderRadius.circular(2)))),
+                              const SizedBox(width: 8),
+                              Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 2 ? AppColors.tealDark : AppColors.border, borderRadius: BorderRadius.circular(2)))),
+                            ]),
+                            const SizedBox(height: 20),
+                            if (_step == 1) _stepOne(),
+                            if (_step == 2) _stepTwo(),
+                            const SizedBox(height: 8),
+                            _termsCheckbox(),
+                            const SizedBox(height: 20),
+                            if (_step == 1)
+                              GradientButton(
+                                label: t('auth.registerButton'),
+                                onTap: _termsAccepted ? () => setState(() => _step = 2) : null,
+                              ),
+                            if (_step == 2)
+                              GradientButton(
+                                label: t('auth.completeRegistration'),
+                                onTap: () async {
+                                  await authProvider.register('', '', '');
+                                  if (context.mounted) Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
+                                },
+                              ),
+                          ],
+                        ),
+                      ),
                       ],
-                    ),
                   ),
                 ),
               ),
             ),
-            const AuthFooter(),
           ],
         ),
       ),
@@ -98,9 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(width: 12),
         Expanded(child: _field(t('auth.organization'), t('auth.orgPlaceholder'), false)),
       ]),
-      const SizedBox(height: 12),
+      const SizedBox(height: 20),
       _field(t('auth.emailOfficial'), t('auth.emailPlaceholder'), false, email: true),
-      const SizedBox(height: 12),
+      const SizedBox(height: 20),
       Row(children: [
         Expanded(child: _field(t('auth.password'), '••••••••', true)),
         const SizedBox(width: 12),
@@ -112,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _stepTwo() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8), color: AppColors.gray100),
+      decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12), color: AppColors.gray100),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(t('auth.reviewInfo'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.navy)),
         const SizedBox(height: 16),
@@ -129,12 +124,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _field(String label, String hint, bool obscure, {bool email = false}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 14, color: AppColors.text)),
-      const SizedBox(height: 4),
+      Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text)),
+      const SizedBox(height: 6),
       TextField(
         obscureText: obscure,
         keyboardType: email ? TextInputType.emailAddress : null,
-        decoration: InputDecoration(hintText: hint, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+        decoration: InputDecoration(hintText: hint, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14)),
       ),
     ]);
   }
@@ -147,13 +142,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           value: _termsAccepted,
           onChanged: (v) => setState(() => _termsAccepted = v ?? false),
           side: const BorderSide(color: AppColors.border),
+          activeColor: AppColors.accent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
       ),
       const SizedBox(width: 8),
       Expanded(
         child: RichText(
           text: TextSpan(
-            style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+            style: const TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
             children: [
               TextSpan(text: '${t('terms.prefix')} '),
               TextSpan(text: t('footer.tos'), style: const TextStyle(color: AppColors.tealDark)),

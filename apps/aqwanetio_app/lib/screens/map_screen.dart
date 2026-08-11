@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models.dart';
@@ -28,11 +29,15 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   bool _showCards = true;
 
+  // Floating header zone height (pill + margins) from home_screen.dart.
+  static const _headerZone = 76.0;
+
   Color _statusColor(PondStatus s) => switch (s) { PondStatus.safe => const Color(0xFF22c55e), PondStatus.warning => const Color(0xFFeab308), PondStatus.toxic => const Color(0xFFef4444) };
 
   @override
   Widget build(BuildContext context) {
     final ponds = mockPonds;
+    final topInset = MediaQuery.paddingOf(context).top;
     return Stack(
       children: [
         FlutterMap(
@@ -74,20 +79,30 @@ class _MapScreenState extends State<MapScreen> {
         ),
         Positioned(
           right: 12,
-          top: 12,
+          top: topInset + _headerZone,
           child: Material(
-            color: Colors.white,
+            color: Colors.transparent,
             shape: const CircleBorder(),
-            elevation: 2,
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () => setState(() => _showCards = !_showCards),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  _showCards ? Icons.layers_outlined : Icons.layers_clear,
-                  size: 20,
-                  color: AppColors.textMuted,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 2))],
+                  ),
+                  child: Icon(
+                    _showCards ? Icons.layers_outlined : Icons.layers_clear,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
             ),
@@ -95,7 +110,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
         Positioned(
           left: 12,
-          top: 12,
+          top: topInset + _headerZone,
           child: IgnorePointer(
             ignoring: !_showCards,
             child: AnimatedSlide(
@@ -112,7 +127,7 @@ class _MapScreenState extends State<MapScreen> {
                   ],
                 ],
               ),
-            ),
+            ),  
           ),
         ),
       ],

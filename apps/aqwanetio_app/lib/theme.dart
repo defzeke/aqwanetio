@@ -43,22 +43,42 @@ ThemeData aqwaTheme() => ThemeData(
     scrolledUnderElevation: 0,
   ),
   dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1),
+  navigationBarTheme: NavigationBarThemeData(
+    height: 70,
+    backgroundColor: Colors.white.withValues(alpha: 0.8),
+    surfaceTintColor: Colors.transparent,
+    elevation: 3,
+    indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+    iconTheme: WidgetStateProperty.resolveWith(
+      (states) => IconThemeData(
+        size: states.contains(WidgetState.selected) ? 26 : 24,
+        color: states.contains(WidgetState.selected) ? AppColors.primary : AppColors.textMuted,
+      ),
+    ),
+    labelTextStyle: WidgetStateProperty.resolveWith(
+      (states) => TextStyle(
+        fontSize: states.contains(WidgetState.selected) ? 12 : 11,
+        fontWeight: states.contains(WidgetState.selected) ? FontWeight.w600 : FontWeight.w500,
+        color: states.contains(WidgetState.selected) ? AppColors.navy : AppColors.textMuted,
+      ),
+    ),
+  ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: AppColors.inputBg,
+    fillColor: Colors.white,
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(4),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.border, width: 1.4),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(4),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.border, width: 1.4),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: AppColors.accent, width: 2),
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
