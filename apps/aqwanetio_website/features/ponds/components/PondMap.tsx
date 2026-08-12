@@ -27,18 +27,31 @@ const PondMap = memo(function PondMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const overlayPaneRef = useRef<HTMLElement | null>(null);
   const markersRef = useRef(new Map<string, L.CircleMarker>());
   const [zoom, setZoom] = useState(6);
   const { t } = useTranslation();
+
+  const hideMarkers = useCallback(() => {
+    if (overlayPaneRef.current) overlayPaneRef.current.style.visibility = "hidden";
+  }, []);
+
+  const showMarkers = useCallback(() => {
+    if (overlayPaneRef.current) overlayPaneRef.current.style.visibility = "";
+  }, []);
 
   const handleFocus = useCallback((pondId: string) => {
     const map = mapInstanceRef.current;
     const pond = pondsService.getById(pondId);
     const marker = markersRef.current.get(pondId);
     if (!map || !pond || !marker) return;
+    hideMarkers();
     map.flyTo([pond.lat, pond.lng], 13, { duration: 1.2 });
-    map.once("moveend", () => marker.openTooltip());
-  }, []);
+    map.once("moveend", () => {
+      showMarkers();
+      marker.openTooltip();
+    });
+  }, [hideMarkers, showMarkers]);
   usePondFocus(handleFocus);
 
   useEffect(() => {
@@ -72,6 +85,9 @@ const PondMap = memo(function PondMap({
     map.on("zoomend", syncZoom);
     syncZoom();
 
+    overlayPaneRef.current = map.getPane("overlayPane") ?? null;
+    map.on("dragstart", showMarkers);
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
     }).addTo(map);
@@ -104,11 +120,12 @@ const PondMap = memo(function PondMap({
     mapInstanceRef.current = map;
 
     return () => {
+      map.off("dragstart", showMarkers);
       map.remove();
       mapInstanceRef.current = null;
       markers.clear();
     };
-  }, [onPondSelect]);
+  }, [onPondSelect, showMarkers]);
 
   return (
     <div className="relative h-full w-full">
