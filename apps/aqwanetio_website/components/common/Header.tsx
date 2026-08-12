@@ -5,6 +5,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import SettingsDropdown from "@/components/SettingsDropdown";
+import PondSearch from "@/components/PondSearch";
 import { useSettings } from "@/lib/settings-context";
 import { useTranslation } from "@/lib/translations";
 
@@ -66,6 +67,11 @@ export default function Header() {
               );
             })}
           </nav>
+          {pathname === "/map" && (
+            <div className="hidden md:block">
+              <PondSearch />
+            </div>
+          )}
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -124,6 +130,12 @@ export default function Header() {
                 </Link>
               );
             })}
+            <hr className="my-2 border-line" />
+            {pathname === "/map" && (
+              <div className="md:hidden">
+                <PondSearch />
+              </div>
+            )}
             <hr className="my-2 border-line" />
             {user ? (
               <button

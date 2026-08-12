@@ -1,9 +1,10 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { pondsService } from "../services";
+import { usePondFocus } from "@/lib/pond-focus";
 import { useTranslation } from "@/lib/translations";
 
 const statusColors: Record<string, string> = {
@@ -26,8 +27,19 @@ const PondMap = memo(function PondMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef(new Map<string, L.CircleMarker>());
   const [zoom, setZoom] = useState(6);
   const { t } = useTranslation();
+
+  const handleFocus = useCallback((pondId: string) => {
+    const map = mapInstanceRef.current;
+    const pond = pondsService.getById(pondId);
+    const marker = markersRef.current.get(pondId);
+    if (!map || !pond || !marker) return;
+    map.flyTo([pond.lat, pond.lng], 13, { duration: 1.2 });
+    map.once("moveend", () => marker.openTooltip());
+  }, []);
+  usePondFocus(handleFocus);
 
   useEffect(() => {
     const update = () => {
@@ -44,6 +56,7 @@ const PondMap = memo(function PondMap({
 
     const ponds = pondsService.getAll();
     const bounds = L.latLngBounds([]);
+    const markers = markersRef.current;
 
     const phBounds = L.latLngBounds([3.0, 113.0], [22.0, 128.0]);
 
@@ -81,6 +94,7 @@ const PondMap = memo(function PondMap({
       marker.on("click", () => onPondSelect(pond.id));
 
       bounds.extend([pond.lat, pond.lng]);
+      markers.set(pond.id, marker);
     });
 
     if (bounds.isValid()) {
@@ -92,6 +106,7 @@ const PondMap = memo(function PondMap({
     return () => {
       map.remove();
       mapInstanceRef.current = null;
+      markers.clear();
     };
   }, [onPondSelect]);
 
