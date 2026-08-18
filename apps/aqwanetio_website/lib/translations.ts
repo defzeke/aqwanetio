@@ -46,10 +46,8 @@ const dict = {
     },
     mapStyles: {
       label: "Map style",
-      auto: "Automatic",
       colored: "Colored",
       minimal: "Minimal",
-      dark: "Dark",
       satellite: "Satellite",
     },
     ctaCard: {
@@ -173,10 +171,8 @@ const dict = {
     },
     mapStyles: {
       label: "Estilo ng mapa",
-      auto: "Awtomatiko",
       colored: "May Kulay",
       minimal: "Minimal",
-      dark: "Madilim",
       satellite: "Satellite",
     },
     ctaCard: {

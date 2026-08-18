@@ -5,7 +5,7 @@ import { Check, Layers } from "lucide-react";
 import { type MapStyleId } from "@/lib/map-styles";
 import { useTranslation } from "@/lib/translations";
 
-const OPTIONS: MapStyleId[] = ["auto", "colored", "minimal", "dark", "satellite"];
+const OPTIONS: MapStyleId[] = ["colored", "minimal", "satellite"];
 
 export default function MapStyleSwitcher({
   current,

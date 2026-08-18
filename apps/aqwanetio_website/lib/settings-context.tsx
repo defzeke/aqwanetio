@@ -34,7 +34,7 @@ function initialMapStyle(): MapStyleId {
     const stored = window.localStorage.getItem(MAP_STYLE_KEY);
     if (stored && stored in MAP_STYLES) return stored as MapStyleId;
   }
-  return "auto";
+  return "colored";
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {

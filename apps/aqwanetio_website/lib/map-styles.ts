@@ -4,7 +4,7 @@ import type {
   SymbolLayerSpecification,
 } from "maplibre-gl";
 
-export type MapStyleId = "auto" | "colored" | "minimal" | "dark" | "satellite";
+export type MapStyleId = "colored" | "minimal" | "satellite";
 
 const DARK_MATTER_URL =
   "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -36,10 +36,8 @@ export type MapStyles = {
 };
 
 export const MAP_STYLES: Record<MapStyleId, MapStyles> = {
-  auto: { light: POSITRON_URL, dark: DARK_MATTER_URL },
-  colored: { light: VOYAGER_URL, dark: VOYAGER_URL },
+  colored: { light: VOYAGER_URL, dark: DARK_MATTER_URL },
   minimal: { light: POSITRON_URL, dark: POSITRON_URL },
-  dark: { light: DARK_MATTER_URL, dark: DARK_MATTER_URL },
   satellite: { light: SATELLITE_STYLE, dark: SATELLITE_STYLE },
 };
 
