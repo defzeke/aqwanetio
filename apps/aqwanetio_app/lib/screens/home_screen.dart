@@ -5,7 +5,7 @@ import '../theme.dart';
 import '../models.dart';
 import '../main.dart';
 import '../widgets/pond_card.dart';
-import '../widgets/settings_sheet.dart';
+import '../widgets/menu_sheet.dart';
 import 'map_screen.dart';
 import 'pond_detail_screen.dart';
 
@@ -39,8 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => PondDetailScreen(pond: pond)));
   }
 
-  void _openSettings() {
-    showModalBottomSheet(context: context, builder: (_) => const SettingsSheet(), shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))));
+  void _openMenu() {
+    showModalBottomSheet(context: context, builder: (_) => const MenuSheet(), shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))));
   }
 
   @override
@@ -115,21 +115,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(color: AppColors.gray100, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
                     child: Text(u.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text)),
-                  )
-                else ...[
-                  TextButton(onPressed: () => Navigator.of(context).pushNamed('/login'), style: TextButton.styleFrom(minimumSize: const Size(0, 32), padding: const EdgeInsets.symmetric(horizontal: 8), tapTargetSize: MaterialTapTargetSize.shrinkWrap), child: Text(t('header.signIn'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.navy))),
-                  const SizedBox(width: 2),
-                  FilledButton(onPressed: () => Navigator.of(context).pushNamed('/register'), style: FilledButton.styleFrom(minimumSize: const Size(0, 32), padding: const EdgeInsets.symmetric(horizontal: 12), tapTargetSize: MaterialTapTargetSize.shrinkWrap, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: Text(t('header.register'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
-                ],
+                  ),
                 IconButton(
-                  icon: const Icon(Icons.settings_outlined, size: 22, color: AppColors.textMuted),
+                  icon: const Icon(Icons.menu, size: 22, color: AppColors.textMuted),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.gray100,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   padding: const EdgeInsets.all(6),
                   constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-                  onPressed: _openSettings,
+                  onPressed: _openMenu,
                 ),
               ]),
             ),
