@@ -41,6 +41,17 @@ const dict = {
       toxicLabel: "Toxic:",
       toxicDesc: "Above 1.0 ppm NH₃",
     },
+    mapPopup: {
+      viewDetails: "View Details",
+    },
+    mapStyles: {
+      label: "Map style",
+      auto: "Automatic",
+      colored: "Colored",
+      minimal: "Minimal",
+      dark: "Dark",
+      satellite: "Satellite",
+    },
     ctaCard: {
       title: "Detailed Data Locked",
       desc: "Create your free account to access and claim ponds, view detailed time-series predictions, and water quality trends.",
@@ -156,6 +167,17 @@ const dict = {
       warningDesc: "0.4–1.0 ppm NH₃",
       toxicLabel: "Nakakalason:",
       toxicDesc: "Higit sa 1.0 ppm NH₃",
+    },
+    mapPopup: {
+      viewDetails: "Tingnan ang Detalye",
+    },
+    mapStyles: {
+      label: "Estilo ng mapa",
+      auto: "Awtomatiko",
+      colored: "May Kulay",
+      minimal: "Minimal",
+      dark: "Madilim",
+      satellite: "Satellite",
     },
     ctaCard: {
       title: "Naka-lock ang Detalyadong Datos",

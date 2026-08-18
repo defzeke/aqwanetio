@@ -20,21 +20,21 @@ export default function MapLegend() {
 
       <div className="space-y-2.5 p-3 pt-1 md:p-4 md:pt-1">
         <div className="flex items-start gap-2.5">
-          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#15803d]" />
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-safe" />
           <span className="text-sm text-muted">
             <strong className="text-ink">{t("mapLegend.safeLabel")}</strong>{" "}
             {t("mapLegend.safeDesc")}
           </span>
         </div>
         <div className="flex items-start gap-2.5">
-          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#d97706]" />
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-warning" />
           <span className="text-sm text-muted">
             <strong className="text-ink">{t("mapLegend.warningLabel")}</strong>{" "}
             {t("mapLegend.warningDesc")}
           </span>
         </div>
         <div className="flex items-start gap-2.5">
-          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#dc2626]" />
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-alert" />
           <span className="text-sm text-muted">
             <strong className="text-ink">{t("mapLegend.toxicLabel")}</strong>{" "}
             {t("mapLegend.toxicDesc")}

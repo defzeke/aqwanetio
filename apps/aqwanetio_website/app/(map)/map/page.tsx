@@ -22,7 +22,7 @@ export default function MapPage() {
 
   return (
     <>
-      <div className="relative flex-1 overflow-hidden">
+      <div className="absolute top-0 left-0 w-screen h-screen overflow-hidden z-0">
         <div className="absolute inset-0 z-0">
           <PondMap onPondSelect={onPondSelect} />
           <div
