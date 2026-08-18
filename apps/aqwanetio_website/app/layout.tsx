@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AquaNetIO - DOST-ASTI Water Quality Monitoring",
+  title: "AqWaNetIO",
   description:
     "Real-time aquaculture water quality monitoring and ammonia toxicity prediction system by DOST-ASTI.",
 };
