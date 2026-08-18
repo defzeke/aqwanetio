@@ -65,7 +65,7 @@ export default function PondSearch() {
         aria-controls="pond-search-results"
         aria-autocomplete="list"
         autoComplete="off"
-        className="neu-input h-9 w-44 rounded-full pl-4 pr-8 text-sm transition-[width] duration-200 focus:w-52"
+        className="neu-input h-9 w-52 rounded-full pl-5 pr-8 text-sm transition-[width] duration-200 focus:w-60"
       />
       <svg
         className="pointer-events-none absolute inset-y-0 right-3 my-auto h-4 w-4 text-muted"
