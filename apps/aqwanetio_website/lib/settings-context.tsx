@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { MAP_STYLES, type MapStyleId } from "@/lib/map-styles";
 
 type Language = "en" | "fil";
@@ -42,6 +42,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState(false);
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mapStyle, setMapStyle] = useState<MapStyleId>(initialMapStyle);
+  const prevTheme = useRef(theme);
+
+  useEffect(() => {
+    if (prevTheme.current === "light" && theme === "dark") {
+      setMapStyle("colored");
+    }
+    prevTheme.current = theme;
+  }, [theme, setMapStyle]);
 
   useEffect(() => {
     const root = document.documentElement;
