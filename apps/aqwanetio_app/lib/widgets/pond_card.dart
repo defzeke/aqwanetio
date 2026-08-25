@@ -14,7 +14,8 @@ class PondCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AppColors.border)),
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: AppColors.border)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
@@ -26,9 +27,9 @@ class PondCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(pond.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                    Text(pond.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
                     const SizedBox(height: 4),
-                    Text('NH₃: ${pond.ammoniaLevel.toStringAsFixed(2)} ppm', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                    Text('NH₃: ${pond.ammoniaLevel.toStringAsFixed(2)} ppm', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                   ],
                 ),
               ),

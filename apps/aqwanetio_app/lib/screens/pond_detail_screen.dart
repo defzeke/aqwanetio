@@ -66,7 +66,7 @@ class _PondDetailScreenState extends State<PondDetailScreen> {
             showSelectedIcon: false,
             style: ButtonStyle(
               visualDensity: VisualDensity.compact,
-              side: WidgetStateProperty.all(const BorderSide(color: AppColors.border)),
+              side: WidgetStateProperty.all(BorderSide(color: AppColors.border)),
             ),
           ),
           if (_historical) ...[
@@ -76,12 +76,12 @@ class _PondDetailScreenState extends State<PondDetailScreen> {
           const SizedBox(height: 16),
           PondChart(readings: readings, predictions: predictions),
           const SizedBox(height: 16),
-          Text(t('modal.readings'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+          Text(t('modal.readings'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
           const SizedBox(height: 8),
           ReadingsTable(readings: readings.take(12).toList()),
           if (!_historical) ...[
             const SizedBox(height: 16),
-            Text(t('modal.forecast'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+            Text(t('modal.forecast'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
             const SizedBox(height: 8),
             PredictionPanel(predictions: predictions),
           ],
@@ -103,15 +103,15 @@ class _PondDetailScreenState extends State<PondDetailScreen> {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border, width: 1.4),
         ),
         child: Row(children: [
-          const Icon(Icons.calendar_month_outlined, size: 18, color: AppColors.textMuted),
+          Icon(Icons.calendar_month_outlined, size: 18, color: AppColors.textMuted),
           const SizedBox(width: 12),
-          Expanded(child: Text(formatted, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text))),
-          const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+          Expanded(child: Text(formatted, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text))),
+          Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
         ]),
       ),
     );

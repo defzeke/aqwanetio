@@ -11,6 +11,7 @@ class ReadingsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        color: AppColors.surface,
         border: Border.all(color: AppColors.border),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -24,15 +25,15 @@ class ReadingsTable extends StatelessWidget {
         border: TableBorder(horizontalInside: BorderSide(color: AppColors.border)),
         children: [
           TableRow(
-            decoration: const BoxDecoration(color: AppColors.background),
+            decoration: BoxDecoration(color: AppColors.background),
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Text(t('table.time'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+                child: Text(t('table.time'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Text(t('modal.ammonia'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+                child: Text(t('modal.ammonia'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
               ),
             ],
           ),
@@ -40,11 +41,11 @@ class ReadingsTable extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Text('${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}', style: const TextStyle(color: AppColors.textMuted)),
+                child: Text('${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}', style: TextStyle(color: AppColors.textMuted)),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Text(r.ammonia.toStringAsFixed(3)),
+                child: Text(r.ammonia.toStringAsFixed(3), style: TextStyle(color: AppColors.text)),
               ),
             ],
           )),

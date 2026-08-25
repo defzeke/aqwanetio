@@ -35,22 +35,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: AppColors.border),
-                          boxShadow: [BoxShadow(color: AppColors.navy.withValues(alpha: 0.06), blurRadius: 24, offset: const Offset(0, 8))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark ? 0.4 : 0.06), blurRadius: 24, offset: const Offset(0, 8))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(t('auth.createAccount'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.navy)),
+                            Text(t('auth.createAccount'), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.navy)),
                             const SizedBox(height: 8),
-                            Text(t('auth.registerDesc'), style: const TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.5)),
+                            Text(t('auth.registerDesc'), style: TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.5)),
                             const SizedBox(height: 20),
                             Row(children: [
-                              Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 1 ? AppColors.tealDark : AppColors.border, borderRadius: BorderRadius.circular(2)))),
+                              Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 1 ? AppColors.cyan : AppColors.border, borderRadius: BorderRadius.circular(2)))),
                               const SizedBox(width: 8),
-                              Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 2 ? AppColors.tealDark : AppColors.border, borderRadius: BorderRadius.circular(2)))),
+                              Expanded(child: Container(height: 4, decoration: BoxDecoration(color: _step >= 2 ? AppColors.cyan : AppColors.border, borderRadius: BorderRadius.circular(2)))),
                             ]),
                             const SizedBox(height: 20),
                             if (_step == 1) _stepOne(),
@@ -109,22 +109,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12), color: AppColors.gray100),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(t('auth.reviewInfo'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.navy)),
+        Text(t('auth.reviewInfo'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.navy)),
         const SizedBox(height: 16),
-        Text('${t('auth.fullName')}: ${t('auth.fromForm')}', style: const TextStyle(fontSize: 14)),
+        Text('${t('auth.fullName')}: ${t('auth.fromForm')}', style: TextStyle(fontSize: 14, color: AppColors.text)),
         const SizedBox(height: 8),
-        Text('${t('auth.organization')}: ${t('auth.fromForm')}', style: const TextStyle(fontSize: 14)),
+        Text('${t('auth.organization')}: ${t('auth.fromForm')}', style: TextStyle(fontSize: 14, color: AppColors.text)),
         const SizedBox(height: 8),
-        Text('${t('auth.email')}: ${t('auth.fromForm')}', style: const TextStyle(fontSize: 14)),
+        Text('${t('auth.email')}: ${t('auth.fromForm')}', style: TextStyle(fontSize: 14, color: AppColors.text)),
         const SizedBox(height: 12),
-        Text(t('auth.verificationNotice'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+        Text(t('auth.verificationNotice'), style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
       ]),
     );
   }
 
   Widget _field(String label, String hint, bool obscure, {bool email = false}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text)),
+      Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text)),
       const SizedBox(height: 6),
       TextField(
         obscureText: obscure,
@@ -141,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Checkbox(
           value: _termsAccepted,
           onChanged: (v) => setState(() => _termsAccepted = v ?? false),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
           activeColor: AppColors.accent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
@@ -150,12 +150,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Expanded(
         child: RichText(
           text: TextSpan(
-            style: const TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
+            style: TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
             children: [
               TextSpan(text: '${t('terms.prefix')} '),
-              TextSpan(text: t('footer.tos'), style: const TextStyle(color: AppColors.tealDark)),
+              TextSpan(text: t('footer.tos'), style: TextStyle(color: AppColors.cyan)),
               TextSpan(text: ' ${t('terms.and')} '),
-              TextSpan(text: t('footer.privacy'), style: const TextStyle(color: AppColors.tealDark)),
+              TextSpan(text: t('footer.privacy'), style: TextStyle(color: AppColors.cyan)),
               TextSpan(text: ' ${t('terms.suffix')}'),
             ],
           ),

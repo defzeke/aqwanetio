@@ -10,8 +10,8 @@ class AuthHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 64,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -22,16 +22,16 @@ class AuthHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.chevron_left, size: 20, color: AppColors.navy),
+                Icon(Icons.chevron_left, size: 20, color: AppColors.navy),
                 const SizedBox(width: 4),
-                Text(t('authHeader.back'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.navy)),
+                Text(t('authHeader.back'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.navy)),
               ],
             ),
           ),
           const Spacer(),
           Text(
             isLogin ? t('authHeader.hasAccount') : t('authHeader.noAccount'),
-            style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 14, color: AppColors.textMuted),
           ),
           const SizedBox(width: 4),
           TextButton(

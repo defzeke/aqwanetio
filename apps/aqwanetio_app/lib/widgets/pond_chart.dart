@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models.dart';
+import '../theme.dart';
 import '../translations.dart';
 
 class PondChart extends StatefulWidget {
@@ -67,6 +68,7 @@ class _PondChartState extends State<PondChart> {
               color: _color,
               hoveredIdx: _hoveredIdx,
               historyCount: vals.length,
+              dark: AppColors.isDark,
             ),
           ),
         ),
@@ -82,25 +84,26 @@ class _PondChartState extends State<PondChart> {
 
   Widget _buildTile(double val, String label, Color color) {
     final safe = val < _warning;
+    final dark = AppColors.isDark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: safe ? const Color(0xFFbbf7d0) : const Color(0xFFfecaca)),
-          color: safe ? const Color(0xFFf0fdf4) : const Color(0xFFfef2f2),
+          border: Border.all(color: safe ? (dark ? const Color(0xFF14532d) : const Color(0xFFbbf7d0)) : (dark ? const Color(0xFF7f1d1d) : const Color(0xFFfecaca))),
+          color: safe ? (dark ? const Color(0xFF052e16) : const Color(0xFFf0fdf4)) : (dark ? const Color(0xFF450a0a) : const Color(0xFFfef2f2)),
         ),
         child: Row(children: [
           Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 8),
-          Text(label.split(' ')[0], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: safe ? const Color(0xFF166534) : const Color(0xFF991b1b))),
+          Text(label.split(' ')[0], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: safe ? (dark ? const Color(0xFFbbf7d0) : const Color(0xFF166534)) : (dark ? const Color(0xFFfecaca) : const Color(0xFF991b1b)))),
           const Spacer(),
-          Text(val.toStringAsFixed(2), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: safe ? const Color(0xFF15803d) : const Color(0xFFdc2626))),
+          Text(val.toStringAsFixed(2), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: safe ? (dark ? const Color(0xFF4ade80) : const Color(0xFF15803d)) : AppColors.alert)),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: safe ? const Color(0xFFbbf7d0) : const Color(0xFFfecaca), borderRadius: BorderRadius.circular(12)),
-            child: Text(safe ? t('status.safe') : t('status.critical'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: safe ? const Color(0xFF166534) : const Color(0xFF991b1b))),
+            decoration: BoxDecoration(color: safe ? (dark ? const Color(0xFF14532d) : const Color(0xFFbbf7d0)) : (dark ? const Color(0xFF7f1d1d) : const Color(0xFFfecaca)), borderRadius: BorderRadius.circular(12)),
+            child: Text(safe ? t('status.safe') : t('status.critical'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: safe ? (dark ? const Color(0xFFbbf7d0) : const Color(0xFF166534)) : (dark ? const Color(0xFFfecaca) : const Color(0xFF991b1b)))),
           ),
         ]),
       ),
@@ -119,8 +122,9 @@ class _ChartPainter extends CustomPainter {
   final Color color;
   final int? hoveredIdx;
   final int historyCount;
+  final bool dark;
 
-  _ChartPainter({required this.vals, required this.forecastVals, required this.upper, required this.lower, required this.minV, required this.maxV, required this.warning, required this.color, this.hoveredIdx, required this.historyCount});
+  _ChartPainter({required this.vals, required this.forecastVals, required this.upper, required this.lower, required this.minV, required this.maxV, required this.warning, required this.color, this.hoveredIdx, required this.historyCount, required this.dark});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -133,20 +137,20 @@ class _ChartPainter extends CustomPainter {
     double scaleX(int i) => padL + (i / math.max(total - 1, 1)) * iW;
     double scaleY(double v) => padT + iH - ((v - minV) / (maxV - minV)) * iH;
 
-    final gridPaint = Paint()..color = const Color(0xFFe5e7eb)..strokeWidth = 1;
+    final gridPaint = Paint()..color = AppColors.chartGrid..strokeWidth = 1;
     for (int i = 0; i <= 4; i++) {
       final y = padT + (i / 4) * iH;
       canvas.drawLine(Offset(padL, y), Offset(padL + iW, y), gridPaint);
     }
 
-    final warnPaint = Paint()..color = const Color(0xFFef4444)..strokeWidth = 1.5;
+    final warnPaint = Paint()..color = AppColors.alert.withValues(alpha: 0.7)..strokeWidth = 1.5;
     final warnY = scaleY(warning);
     if (warnY >= padT && warnY <= padT + iH) {
       canvas.drawLine(Offset(padL, warnY), Offset(padL + iW, warnY), warnPaint);
     }
 
     if (forecastVals.isNotEmpty && upper.length == lower.length) {
-      final band = Paint()..color = const Color(0xFFfecaca).withValues(alpha: 0.4);
+      final band = Paint()..color = AppColors.chartBand;
       final path = Path();
       final start = vals.length;
       for (int i = 0; i < upper.length; i++) {
@@ -183,7 +187,7 @@ class _ChartPainter extends CustomPainter {
 
     if (hoveredIdx != null && hoveredIdx! < total) {
       final x = scaleX(hoveredIdx!);
-      final linePaint = Paint()..color = const Color(0xFF94a3b8)..strokeWidth = 1;
+      final linePaint = Paint()..color = AppColors.gray300..strokeWidth = 1;
       canvas.drawLine(Offset(x, padT), Offset(x, padT + iH), linePaint);
     }
 
@@ -222,7 +226,7 @@ class _ChartPainter extends CustomPainter {
     for (int i = 0; i <= 4; i++) {
       final v = minV + (i / 4) * (maxV - minV);
       final y = padT + (i / 4) * iH;
-      final tp = TextPainter(text: TextSpan(text: v.toStringAsFixed(2), style: const TextStyle(fontSize: 10, color: Color(0xFF6b7280))), textDirection: TextDirection.ltr);
+      final tp = TextPainter(text: TextSpan(text: v.toStringAsFixed(2), style: TextStyle(fontSize: 10, color: AppColors.textMuted)), textDirection: TextDirection.ltr);
       tp.layout();
       tp.paint(canvas, Offset(padL - 6 - tp.width, y - tp.height / 2));
     }
@@ -232,12 +236,12 @@ class _ChartPainter extends CustomPainter {
     final step = math.max(1, total ~/ 5);
     for (int i = 0; i < total; i += step) {
       final x = scaleX(i);
-      final tp = TextPainter(text: TextSpan(text: '${i}h', style: const TextStyle(fontSize: 10, color: Color(0xFF6b7280))), textDirection: TextDirection.ltr);
+      final tp = TextPainter(text: TextSpan(text: '${i}h', style: TextStyle(fontSize: 10, color: AppColors.textMuted)), textDirection: TextDirection.ltr);
       tp.layout();
       tp.paint(canvas, Offset(x - tp.width / 2, padT + iH + 6));
     }
   }
 
   @override
-  bool shouldRepaint(_ChartPainter old) => old.vals != vals || old.forecastVals != forecastVals || old.hoveredIdx != hoveredIdx;
+  bool shouldRepaint(_ChartPainter old) => old.vals != vals || old.forecastVals != forecastVals || old.hoveredIdx != hoveredIdx || old.dark != dark;
 }

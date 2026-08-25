@@ -6,6 +6,7 @@ import '../models.dart';
 import '../main.dart';
 import '../widgets/pond_card.dart';
 import '../widgets/menu_sheet.dart';
+import '../widgets/pond_search.dart';
 import 'map_screen.dart';
 import 'pond_detail_screen.dart';
 
@@ -37,6 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openPondDetail(Pond pond) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => PondDetailScreen(pond: pond)));
+  }
+
+  void _onSearchSelect(Pond pond) {
+    setState(() => _tab = 0);
+    pondFocus.focus(pond.id);
+    _openPondDetail(pond);
   }
 
   void _openMenu() {
@@ -99,34 +106,56 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 54,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.92),
+                color: AppColors.surface.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
-                boxShadow: [BoxShadow(color: AppColors.navy.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4))],
+                border: Border.all(color: AppColors.border),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark ? 0.4 : 0.08), blurRadius: 12, offset: const Offset(0, 4))],
               ),
-              child: Row(children: [
-                Image.asset('assets/images/dostasti-logo.png', width: 34, height: 34),
-                const SizedBox(width: 8),
-                Image.asset('assets/images/dost-logo.png', width: 34, height: 34),
-                const Spacer(),
-                if (u != null)
-                  Container(
-                    margin: const EdgeInsets.only(right: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(color: AppColors.gray100, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
-                    child: Text(u.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text)),
+              child: LayoutBuilder(builder: (context, pill) {
+                // ponytail: chip hides under ~460px pill width; bump when search grows
+                final showChip = u != null && pill.maxWidth >= 460;
+                return Row(children: [
+                  Image.asset('assets/images/dostasti-logo.png', width: 34, height: 34),
+                  const SizedBox(width: 8),
+                  Image.asset('assets/images/dost-logo.png', width: 34, height: 34),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
+                      child: PondSearch(onSelected: _onSearchSelect),
+                    ),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.menu, size: 22, color: AppColors.textMuted),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.gray100,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  const Spacer(),
+                  if (showChip)
+                    Container(
+                      margin: const EdgeInsets.only(right: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(color: AppColors.gray100, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+                      child: Text(u.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text)),
+                    ),
+                  IconButton(
+                    icon: Icon(AppColors.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20, color: AppColors.textMuted),
+                    tooltip: t('settings.darkMode'),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.gray100,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                    onPressed: settingsProvider.toggleTheme,
                   ),
-                  padding: const EdgeInsets.all(6),
-                  constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-                  onPressed: _openMenu,
-                ),
-              ]),
+                  IconButton(
+                    icon: Icon(Icons.menu, size: 22, color: AppColors.textMuted),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.gray100,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                    onPressed: _openMenu,
+                  ),
+                ]);
+              }),
             ),
           ),
         ),
@@ -148,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.border),
             ),
@@ -159,11 +188,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 hintText: t('search.hint') == 'search.hint'
                     ? 'Maghanap ng sapa o lokasyon...' // ponytail: t() key-miss fallback
                     : t('search.hint'),
-                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+                prefixIcon: Icon(Icons.search, size: 20, color: AppColors.textMuted),
                 suffixIcon: _searchQuery.isEmpty
                     ? null
                     : IconButton(
-                        icon: const Icon(Icons.close, size: 18, color: AppColors.textMuted),
+                        icon: Icon(Icons.close, size: 18, color: AppColors.textMuted),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _searchQuery = '');
@@ -181,9 +210,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ponds.isEmpty
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.search_off, size: 40, color: AppColors.gray300),
+                    Icon(Icons.search_off, size: 40, color: AppColors.gray300),
                     const SizedBox(height: 8),
-                    Text(t('search.empty'), style: const TextStyle(fontSize: 14, color: AppColors.textMuted)),
+                    Text(t('search.empty'), style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
                   ]),
                 )
               : ListView.separated(
