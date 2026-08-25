@@ -118,14 +118,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   Image.asset('assets/images/dostasti-logo.png', width: 34, height: 34),
                   const SizedBox(width: 8),
                   Image.asset('assets/images/dost-logo.png', width: 34, height: 34),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 240),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
                       child: PondSearch(onSelected: _onSearchSelect),
                     ),
                   ),
-                  const Spacer(),
+                ),
                   if (showChip)
                     Container(
                       margin: const EdgeInsets.only(right: 6),

@@ -54,13 +54,14 @@ class _PondSearchState extends State<PondSearch> {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
+          margin: EdgeInsets.symmetric(horizontal: _focused ? 0 : 16),
           height: 38,
           decoration: BoxDecoration(
             color: AppColors.inputBg,
             borderRadius: BorderRadius.circular(19),
             border: Border.all(color: _focused ? AppColors.accent : AppColors.border, width: _focused ? 1.6 : 1),
           ),
-          padding: const EdgeInsets.only(left: 14),
+          padding: const EdgeInsets.only(left: 12),
           child: Row(children: [
             Expanded(
               child: TextField(
@@ -69,20 +70,20 @@ class _PondSearchState extends State<PondSearch> {
                 onSubmitted: (_) => onFieldSubmitted(),
                 inputFormatters: [LengthLimitingTextInputFormatter(60)],
                 style: TextStyle(fontSize: 13, color: AppColors.text),
-                cursorHeight: 16,
                 decoration: InputDecoration(
                   hintText: t('header.searchPond'),
-                  hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted.withValues(alpha: 0.8)),
+                  hintMaxLines: 1,
+                  hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted.withValues(alpha: 0.8), overflow: TextOverflow.ellipsis),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
                 ),
               ),
             ),
-            Icon(Icons.search, size: 16, color: AppColors.textMuted),
-            const SizedBox(width: 10),
+            Icon(Icons.search, size: 15, color: AppColors.textMuted),
+            const SizedBox(width: 8),
           ]),
         );
       },
