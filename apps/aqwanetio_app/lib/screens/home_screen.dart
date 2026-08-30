@@ -18,17 +18,31 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
+  final _searchCtrl = TextEditingController();
+  final _searchFocus = FocusNode();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     authProvider.addListener(_onAuthChange);
+    _searchCtrl.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _searchCtrl.removeListener(_onSearchChanged);
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
     authProvider.removeListener(_onAuthChange);
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final raw = _searchCtrl.text as dynamic;
+    final q = ((raw as String?) ?? '').trim().toLowerCase();
+    if (q == _searchQuery) return;
+    setState(() => _searchQuery = q);
   }
 
   void _onAuthChange() => setState(() {});
@@ -121,7 +135,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     constraints: const BoxConstraints(maxWidth: 240),
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: PondSearch(onSelected: _onSearchSelect),
+                      child: PondSearch(
+                        controller: _searchCtrl,
+                        focusNode: _searchFocus,
+                        onSelected: _onSearchSelect,
+                        onChanged: (_) {}, // listener already handles via _searchCtrl
+                      ),
                     ),
                   ),
                 ),
@@ -167,17 +186,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPondsTab() {
-    final ponds = mockPonds;
+    final q = ((_searchQuery as dynamic) as String? ?? '').trim().toLowerCase();
+    final ponds = q.isEmpty
+        ? mockPonds
+        : mockPonds.where((p) => ((p.name as dynamic) as String? ?? '').toLowerCase().contains(q)).toList();
     final topInset = MediaQuery.paddingOf(context).top;
     return Column(
       children: [
         Expanded(
-          child: ListView.separated(
-            padding: EdgeInsets.fromLTRB(16, topInset + _headerZone + 12, 16, 110),
-            itemCount: ponds.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemBuilder: (_, i) => PondCard(pond: ponds[i], onTap: () => _openPondDetail(ponds[i])),
-          ),
+          child: ponds.isEmpty
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.search_off, size: 40, color: AppColors.gray300),
+                    const SizedBox(height: 8),
+                    Text(t('search.empty'), style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
+                  ]),
+                )
+              : ListView.separated(
+                  padding: EdgeInsets.fromLTRB(16, topInset + _headerZone + 12, 16, 110),
+                  itemCount: ponds.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  itemBuilder: (_, i) => PondCard(pond: ponds[i], onTap: () => _openPondDetail(ponds[i])),
+                ),
         ),
       ],
     );

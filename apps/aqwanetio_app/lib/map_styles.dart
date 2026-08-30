@@ -3,6 +3,7 @@ enum MapStyleId { colored, minimal, satellite }
 typedef MapStyleDef = ({String urlTemplate, String? urlTemplateDark, String attribution});
 
 const _osmAttribution = '© OpenStreetMap contributors';
+const _esriLightAttribution = '© OpenStreetMap contributors © Esri — Light Gray';
 const _esriSatAttribution = 'Powered by Esri';
 
 const kMapStyles = <MapStyleId, MapStyleDef>{
@@ -13,10 +14,11 @@ const kMapStyles = <MapStyleId, MapStyleDef>{
     attribution: _osmAttribution,
   ),
   MapStyleId.minimal: (
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    urlTemplate:
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
     urlTemplateDark:
-        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    attribution: _osmAttribution,
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: _esriLightAttribution,
   ),
   MapStyleId.satellite: (
     urlTemplate:

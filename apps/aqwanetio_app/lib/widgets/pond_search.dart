@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models.dart';
 import '../theme.dart';
@@ -7,15 +6,20 @@ import '../translations.dart';
 
 class PondSearch extends StatefulWidget {
   final ValueChanged<Pond> onSelected;
-  const PondSearch({super.key, required this.onSelected});
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onChanged;
+  const PondSearch({super.key, required this.onSelected, this.controller, this.focusNode, this.onChanged});
 
   @override
   State<PondSearch> createState() => _PondSearchState();
 }
 
 class _PondSearchState extends State<PondSearch> {
-  final _controller = TextEditingController();
-  final _focusNode = FocusNode();
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  bool _ownsController = false;
+  bool _ownsFocus = false;
   bool _focused = false;
 
   Color _statusDot(PondStatus s) => switch (s) { PondStatus.safe => const Color(0xFF22c55e), PondStatus.warning => const Color(0xFFeab308), PondStatus.toxic => const Color(0xFFef4444) };
@@ -23,15 +27,36 @@ class _PondSearchState extends State<PondSearch> {
   @override
   void initState() {
     super.initState();
+    _ownsController = widget.controller == null;
+    _ownsFocus = widget.focusNode == null;
+    _controller = widget.controller ?? TextEditingController();
+    _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       if (mounted) setState(() => _focused = _focusNode.hasFocus);
     });
+    _controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    final t = (_controller.text as dynamic) as String? ?? '';
+    widget.onChanged?.call(t);
+  }
+
+  @override
+  void didUpdateWidget(covariant PondSearch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller || oldWidget.focusNode != widget.focusNode) {
+      // ponytail: controller/focus ownership not changed mid-life in this app, keep simple
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
+    _controller.removeListener(_onTextChanged);
+    if (_ownsController) _controller.dispose();
+    if (_ownsFocus) {
+      _focusNode.dispose();
+    }
     super.dispose();
   }
 
@@ -42,9 +67,10 @@ class _PondSearchState extends State<PondSearch> {
       focusNode: _focusNode,
       displayStringForOption: (p) => p.name,
       optionsBuilder: (value) {
-        final q = value.text.trim().toLowerCase();
+        final raw = (value.text as dynamic) as String? ?? '';
+        final q = raw.trim().toLowerCase();
         if (q.isEmpty) return const <Pond>[];
-        return mockPonds.where((p) => p.name.toLowerCase().contains(q));
+        return mockPonds.where((p) => (((p.name as dynamic) as String? ?? '').toLowerCase().contains(q)));
       },
       onSelected: (pond) {
         _controller.clear();
@@ -61,21 +87,6 @@ class _PondSearchState extends State<PondSearch> {
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(19),
             border: Border.all(color: _focused ? AppColors.accent : AppColors.border, width: _focused ? 1.6 : 1),
-            boxShadow: [
-              BoxShadow(
-                inset: true,
-                color: Colors.black.withValues(alpha: AppColors.isDark ? 0.22 : 0.10),
-                blurRadius: 6,
-                spreadRadius: -1,
-                offset: const Offset(0, 1.5),
-              ),
-              BoxShadow(
-                inset: true,
-                color: Colors.white.withValues(alpha: AppColors.isDark ? 0.05 : 0.9),
-                blurRadius: 3,
-                offset: const Offset(0, -1),
-              ),
-            ],
           ),
           padding: const EdgeInsets.only(left: 12),
           child: Row(children: [
