@@ -67,7 +67,9 @@ class _MapScreenState extends State<MapScreen> {
       clipBehavior: Clip.antiAlias,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
           width: 42,
           height: 42,
           decoration: BoxDecoration(
@@ -105,11 +107,21 @@ class _MapScreenState extends State<MapScreen> {
           ),
           children: [
             TileLayer(
-              key: ValueKey('${styleId.name}-$isDark'),
-              urlTemplate: tileUrlFor(styleId, isDark),
+              urlTemplate: kMapStyles[styleId]!.urlTemplate,
               maxZoom: 18,
               userAgentPackageName: 'ph.dost.asti.aqwanetio',
             ),
+            if (kMapStyles[styleId]!.urlTemplateDark != null)
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeInOut,
+                opacity: isDark ? 1 : 0,
+                child: TileLayer(
+                  urlTemplate: kMapStyles[styleId]!.urlTemplateDark!,
+                  maxZoom: 18,
+                  userAgentPackageName: 'ph.dost.asti.aqwanetio',
+                ),
+              ),
             MarkerLayer(
               markers: ponds.map((pond) {
                 return Marker(
@@ -214,7 +226,7 @@ class _MapScreenState extends State<MapScreen> {
             ignoring: !_showCards,
             child: AnimatedSlide(
               offset: _showCards ? Offset.zero : const Offset(-1.5, 0),
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 150),
               curve: Curves.easeOutCubic,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +271,9 @@ class _MapLegendState extends State<_MapLegend> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeInOut,
       width: 220,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: AppColors.surface.withValues(alpha: 0.95), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark ? 0.45 : 0.08), blurRadius: 8)]),

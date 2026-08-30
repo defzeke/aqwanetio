@@ -80,7 +80,7 @@ class _PondSearchState extends State<PondSearch> {
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
+          curve: Curves.easeInOut,
           margin: EdgeInsets.symmetric(horizontal: _focused ? 0 : 16),
           height: 38,
           decoration: BoxDecoration(
@@ -91,25 +91,35 @@ class _PondSearchState extends State<PondSearch> {
           padding: const EdgeInsets.only(left: 12),
           child: Row(children: [
             Expanded(
-              child: TextField(
-                controller: controller,
-                focusNode: focusNode,
-                onSubmitted: (_) => onFieldSubmitted(),
-                inputFormatters: [LengthLimitingTextInputFormatter(60)],
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeInOut,
                 style: TextStyle(fontSize: 13, color: AppColors.text),
-                decoration: InputDecoration(
-                  hintText: t('header.searchPond'),
-                  hintMaxLines: 1,
-                  hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted.withValues(alpha: 0.8), overflow: TextOverflow.ellipsis),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                child: TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  onSubmitted: (_) => onFieldSubmitted(),
+                  inputFormatters: [LengthLimitingTextInputFormatter(60)],
+                  style: TextStyle(fontSize: 13, color: AppColors.text),
+                  decoration: InputDecoration(
+                    hintText: t('header.searchPond'),
+                    hintMaxLines: 1,
+                    hintStyle: TextStyle(fontSize: 12, color: AppColors.textMuted.withValues(alpha: 0.8), overflow: TextOverflow.ellipsis),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
                 ),
               ),
             ),
-            Icon(Icons.search, size: 15, color: AppColors.textMuted),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeInOut,
+              style: TextStyle(color: AppColors.textMuted),
+              child: Icon(Icons.search, size: 15, color: AppColors.textMuted),
+            ),
             const SizedBox(width: 8),
           ]),
         );

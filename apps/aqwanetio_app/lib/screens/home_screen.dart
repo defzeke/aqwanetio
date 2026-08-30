@@ -65,7 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: settingsProvider,
-      builder: (context, _) => Scaffold(
+      builder: (context, _) => AnimatedTheme(
+        data: aqwaTheme(),
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: Scaffold(
       extendBody: true,
       body: Stack(
         children: [
@@ -94,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       ),
-    );
+    ));
   }
 
   // Height of the floating header zone (pill + margins). Map/List overlays
@@ -113,7 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
           clipBehavior: Clip.antiAlias,
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeInOut,
               height: 54,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
