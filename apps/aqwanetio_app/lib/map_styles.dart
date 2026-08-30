@@ -2,23 +2,27 @@ enum MapStyleId { colored, minimal, satellite }
 
 typedef MapStyleDef = ({String urlTemplate, String? urlTemplateDark, String attribution});
 
-const _cartoAttribution = '© OpenStreetMap contributors © CARTO';
+const _osmAttribution = '© OpenStreetMap contributors';
+const _esriSatAttribution = 'Powered by Esri';
 
 const kMapStyles = <MapStyleId, MapStyleDef>{
   MapStyleId.colored: (
-    urlTemplate: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-    urlTemplateDark: 'https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png',
-    attribution: _cartoAttribution,
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    urlTemplateDark:
+        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: _osmAttribution,
   ),
   MapStyleId.minimal: (
-    urlTemplate: 'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png',
-    urlTemplateDark: null,
-    attribution: _cartoAttribution,
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    urlTemplateDark:
+        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: _osmAttribution,
   ),
   MapStyleId.satellite: (
-    urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    urlTemplate:
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     urlTemplateDark: null,
-    attribution: 'Powered by Esri',
+    attribution: _esriSatAttribution,
   ),
 };
 

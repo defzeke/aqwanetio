@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:flutter/services.dart';
 import '../models.dart';
 import '../theme.dart';
@@ -57,9 +58,24 @@ class _PondSearchState extends State<PondSearch> {
           margin: EdgeInsets.symmetric(horizontal: _focused ? 0 : 16),
           height: 38,
           decoration: BoxDecoration(
-            color: AppColors.inputBg,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(19),
             border: Border.all(color: _focused ? AppColors.accent : AppColors.border, width: _focused ? 1.6 : 1),
+            boxShadow: [
+              BoxShadow(
+                inset: true,
+                color: Colors.black.withValues(alpha: AppColors.isDark ? 0.22 : 0.10),
+                blurRadius: 6,
+                spreadRadius: -1,
+                offset: const Offset(0, 1.5),
+              ),
+              BoxShadow(
+                inset: true,
+                color: Colors.white.withValues(alpha: AppColors.isDark ? 0.05 : 0.9),
+                blurRadius: 3,
+                offset: const Offset(0, -1),
+              ),
+            ],
           ),
           padding: const EdgeInsets.only(left: 12),
           child: Row(children: [

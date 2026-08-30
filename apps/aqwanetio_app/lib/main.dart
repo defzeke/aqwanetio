@@ -99,7 +99,7 @@ class SettingsProvider extends ChangeNotifier {
   Language _language = Language.fil;
   bool _notifications = false;
   MapStyleId _mapStyle = MapStyleId.colored;
-  bool _dark = true; // site parity: dark is the default
+  bool _dark = false; 
 
   Language get language => _language;
   bool get notifications => _notifications;

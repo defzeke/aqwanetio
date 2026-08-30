@@ -87,7 +87,10 @@ class _MapScreenState extends State<MapScreen> {
     final ponds = mockPonds;
     final topInset = MediaQuery.paddingOf(context).top;
     final styleId = settingsProvider.mapStyle;
+    final isDark = AppColors.isDark;
     final style = kMapStyles[styleId]!;
+    // pick dark-aware attribution
+    final attribution = style.attribution;
     return Stack(
       children: [
         FlutterMap(
@@ -102,7 +105,8 @@ class _MapScreenState extends State<MapScreen> {
           ),
           children: [
             TileLayer(
-              urlTemplate: tileUrlFor(styleId, AppColors.isDark),
+              key: ValueKey('${styleId.name}-$isDark'),
+              urlTemplate: tileUrlFor(styleId, isDark),
               maxZoom: 18,
               userAgentPackageName: 'ph.dost.asti.aqwanetio',
             ),
@@ -196,7 +200,7 @@ class _MapScreenState extends State<MapScreen> {
           bottom: 104,
           child: IgnorePointer(
             child: Text(
-              style.attribution,
+              attribution,
               style: AppColors.isDark
                   ? TextStyle(fontSize: 9, color: Colors.white.withValues(alpha: 0.45))
                   : TextStyle(fontSize: 9, color: Colors.black.withValues(alpha: 0.45)),
