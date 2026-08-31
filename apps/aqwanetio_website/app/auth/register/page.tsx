@@ -24,6 +24,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   const firstNameTrim = firstName.trim();
   const lastNameTrim = lastName.trim();
   const emailTrim = email.trim();
@@ -41,7 +45,7 @@ export default function RegisterPage() {
   const isPasswordValid =
     password.length >= 8 && password === confirmPassword && confirmPassword.length > 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
       if (!isPersonalValid) return;
@@ -50,8 +54,42 @@ export default function RegisterPage() {
       if (!isPasswordValid) return;
       setStep(3);
     } else if (step === 3) {
-      // final submit handled here
-      // ponytail: keep simple – would call API
+      if (!termsAccepted || submitting) return;
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        const res = await fetch(`${apiUrl}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+          body: JSON.stringify({
+            firstName: firstNameTrim,
+            lastName: lastNameTrim,
+            email: emailTrim,
+            phone: phoneTrim,
+            password,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          const detail = Array.isArray(data.detail)
+            ? data.detail.map((d: any) => d.msg).join(", ")
+            : data.detail || data.message || "Backend failed";
+          throw new Error(detail);
+        }
+
+        setSubmitSuccess(true);
+      } catch (err: any) {
+        const msg = err?.message || "Registration failed. Please try again.";
+        if (msg.toLowerCase().includes("already exists") || msg.includes("email-already-exists")) {
+          setSubmitError("Email already registered. Please sign in.");
+        } else {
+          setSubmitError(msg);
+        }
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -96,6 +134,15 @@ export default function RegisterPage() {
 
             {step === 3 && <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />}
 
+            {submitError && (
+              <p className="rounded-lg bg-alert/10 px-3 py-2 text-sm text-alert">{submitError}</p>
+            )}
+            {submitSuccess && (
+              <p className="rounded-lg bg-safe/10 px-3 py-2 text-sm text-safe">
+                Registration successful! Please check your email for verification.
+              </p>
+            )}
+
             {step === 1 && (
               <button
                 type="submit"
@@ -135,18 +182,21 @@ export default function RegisterPage() {
               <div className="flex flex-col gap-3">
                 <button
                   type="submit"
-                  disabled={!termsAccepted}
+                  disabled={!termsAccepted || submitting || submitSuccess}
                   className="btn btn-cyan btn-shine h-12 w-full rounded-xl text-base font-bold disabled:opacity-50"
                 >
-                  {t("auth.completeRegistration")}
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
+                  {submitting ? "Registering..." : t("auth.completeRegistration")}
+                  {!submitting && (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(2)}
                   className="text-sm font-medium text-muted transition-colors hover:text-ink"
+                  disabled={submitting}
                 >
                   ← {t("auth.back")}
                 </button>
