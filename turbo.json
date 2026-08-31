@@ -16,7 +16,14 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["LOCALAPPDATA", "PUB_CACHE", "PATH", "JAVA_HOME"]
+      "passThroughEnv": [
+        "LOCALAPPDATA", 
+        "PUB_CACHE", 
+        "PATH", 
+        "JAVA_HOME",
+        "VIRTUAL_ENV",
+        "PYTHONPATH"
+      ]
     }
   }
 }
