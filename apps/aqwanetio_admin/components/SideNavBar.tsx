@@ -17,7 +17,7 @@ const bottomLinks = [
   { href: "/support", label: "SUPPORT", icon: <SupportIcon />, disabled: true },
 ];
 
-export default function SideNavBar({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function SideNavBar({ open, onClose, onAddClick }: { open: boolean; onClose: () => void; onAddClick: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -49,7 +49,10 @@ export default function SideNavBar({ open, onClose }: { open: boolean; onClose: 
           ))}
         </nav>
         <div className="flex flex-col gap-2 items-center">
-          <button className="flex gap-2 items-center justify-center bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px]">
+          <button
+            onClick={onAddClick}
+            className="flex gap-2 items-center justify-center bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px] hover:opacity-90"
+          >
             <AddIcon />
             ADD NEW POND
           </button>
