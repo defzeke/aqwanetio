@@ -18,6 +18,7 @@ import { useTranslation } from "@/lib/translations";
 import { useSettings } from "@/lib/settings-context";
 import { useMapStyles } from "@/lib/map-styles";
 import MapStyleSwitcher from "./MapStyleSwitcher";
+import { fetchStations, type Station } from "@/features/stations/services/stations.service";
 
 const statusDot: Record<PondStatus, string> = {
   safe: "bg-safe",
@@ -64,23 +65,54 @@ export default function PondMap({
   const mapRef = useRef<MapRef>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [stations, setStations] = useState<Station[]>([]);
   const { theme, mapStyle, setMapStyle } = useSettings();
   const { t } = useTranslation();
   const { active: styles, ready } = useMapStyles(mapStyle);
 
   const ponds = pondsService.getAll();
-  const focusedPond = focusedId ? pondsService.getById(focusedId) : undefined;
+  const focusedStation = focusedId ? stations.find((s) => String(s.stationId) === focusedId) : undefined;
+  const focusedPondForStation = focusedStation
+    ? ponds[stations.findIndex((s) => String(s.stationId) === focusedId) % ponds.length] || ponds[0]
+    : undefined;
 
-  const handleFocus = useCallback((pondId: string) => {
-    const pond = pondsService.getById(pondId);
-    if (!pond) return;
-    setFocusedId(pondId);
-    mapRef.current?.flyTo({
-      center: [pond.lng, pond.lat],
-      zoom: 13,
-      duration: 1200,
-    });
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetchStations(ctrl.signal)
+      .then((rows) => {
+        if (!ctrl.signal.aborted) setStations(rows);
+      })
+      .catch((e: any) => {
+        if (e?.name === "AbortError") return;
+        console.warn("GET /stations failed (backend down on :8000?)", e);
+        if (!ctrl.signal.aborted) setStations([]);
+      });
+    return () => ctrl.abort();
   }, []);
+
+  const handleFocus = useCallback(
+    (pondId: string) => {
+      const station = stations.find((s) => String(s.stationId) === pondId);
+      if (station) {
+        setFocusedId(pondId);
+        mapRef.current?.flyTo({
+          center: [station.longitude, station.latitude],
+          zoom: 13,
+          duration: 1200,
+        });
+        return;
+      }
+      const pond = pondsService.getById(pondId);
+      if (!pond) return;
+      setFocusedId(pondId);
+      mapRef.current?.flyTo({
+        center: [pond.lng, pond.lat],
+        zoom: 13,
+        duration: 1200,
+      });
+    },
+    [stations]
+  );
   usePondFocus(handleFocus);
 
   useEffect(() => {
@@ -108,52 +140,67 @@ export default function PondMap({
         >
         <FitPhilippines />
         <MapControls position="bottom-left" showZoom showCompass showLocate />
-        {ponds.map((pond) => (
-          <MapMarker
-            key={pond.id}
-            longitude={pond.lng}
-            latitude={pond.lat}
-            onClick={() => setFocusedId(null)}
-          >
-            <MarkerContent>
-              <div
-                className={`h-6 w-6 cursor-pointer rounded-full border-2 border-white shadow-lg transition-transform hover:scale-110 ${statusDot[pond.status]}`}
-              />
-            </MarkerContent>
-            <MarkerTooltip className="border border-line bg-surface text-ink shadow-[var(--shadow-raise-sm)]">
-              {pond.name}
-            </MarkerTooltip>
-            <MarkerPopup className="w-56 border-line">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-semibold text-ink">{pond.name}</p>
-                  <span
-                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusChip[pond.status]}`}
+        {stations.map((station, idx) => {
+          // keep safe/warning/toxic + NH3 from mock datas (ponds) per index
+          const mock = ponds[idx % ponds.length] || ponds[0];
+          return (
+            <MapMarker
+              key={station.stationId}
+              longitude={station.longitude}
+              latitude={station.latitude}
+              onClick={() => setFocusedId(null)}
+            >
+              <MarkerContent>
+                <div
+                  className={`h-6 w-6 cursor-pointer rounded-full border-2 border-white shadow-lg transition-transform hover:scale-110 ${statusDot[mock.status]}`}
+                />
+              </MarkerContent>
+              <MarkerTooltip className="border border-line bg-surface text-ink shadow-[var(--shadow-raise-sm)]">
+                {station.location}
+              </MarkerTooltip>
+              <MarkerPopup className="w-64 border-line">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-sm font-semibold text-ink">{station.location}</p>
+                    <span
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusChip[mock.status]}`}
+                    >
+                      NH₃ {mock.ammoniaLevel} ppm
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted">
+                    {station.municipality}, {station.province} • {station.region}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => onPondSelect(mock.id)}
+                    className="btn btn-ghost w-full rounded-lg px-3 py-1.5 text-xs font-semibold"
                   >
-                    NH₃ {pond.ammoniaLevel} ppm
-                  </span>
+                    {t("mapPopup.viewDetails")}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onPondSelect(pond.id)}
-                  className="btn btn-ghost w-full rounded-lg px-3 py-1.5 text-xs font-semibold"
-                >
-                  {t("mapPopup.viewDetails")}
-                </button>
-              </div>
-            </MarkerPopup>
-          </MapMarker>
-        ))}
-        {focusedPond && (
+              </MarkerPopup>
+            </MapMarker>
+          );
+        })}
+        {focusedStation && focusedPondForStation && (
           <MapPopup
-            longitude={focusedPond.lng}
-            latitude={focusedPond.lat}
+            longitude={focusedStation.longitude}
+            latitude={focusedStation.latitude}
             closeButton
             onClose={() => setFocusedId(null)}
             className="border-line"
           >
-            <p className="text-sm font-semibold text-ink">{focusedPond.name}</p>
-            <p className="text-xs text-muted">NH₃ {focusedPond.ammoniaLevel} ppm</p>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-ink">{focusedStation.location}</p>
+              <p className="text-xs text-muted">
+                {focusedStation.municipality}, {focusedStation.province} • {focusedStation.region}
+              </p>
+              <p className="text-xs text-muted">NH₃ {focusedPondForStation.ammoniaLevel} ppm</p>
+            </div>
           </MapPopup>
         )}
         </MapCn>

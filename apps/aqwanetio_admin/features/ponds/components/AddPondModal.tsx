@@ -270,13 +270,19 @@ export default function AddPondModal({ open, onClose }: Props) {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [created, setCreated] = useState<{ location: string; municipality: string } | null>(null);
 
   useEffect(() => {
     if (open) {
       setSubmitError(null);
       setSubmitting(false);
+      setShowSuccess(false);
+      setCreated(null);
     }
   }, [open]);
+
+  const canConfirm = location.trim() && municipality.trim() && region.trim() && lat !== null && lng !== null && !submitting;
 
   async function handleConfirm() {
     if (!canConfirm || lat === null || lng === null) return;
@@ -284,16 +290,19 @@ export default function AddPondModal({ open, onClose }: Props) {
     setSubmitError(null);
     try {
       const api = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const provinceVal = province.trim() ? province.trim() : null;
       const res = await fetch(`${api}/stations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location: location.trim(), municipality: municipality.trim(), province: province.trim(), region: region.trim(), latitude: lat, longitude: lng }),
+        body: JSON.stringify({ location: location.trim(), municipality: municipality.trim(), province: provinceVal, region: region.trim(), latitude: lat, longitude: lng }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.detail || `HTTP ${res.status}`);
+        const msg = typeof j.detail === "string" ? j.detail : Array.isArray(j.detail) ? j.detail.map((d: any) => d.msg).join("; ") : `HTTP ${res.status}`;
+        throw new Error(msg);
       }
-      onClose();
+      setCreated({ location: location.trim(), municipality: municipality.trim() });
+      setShowSuccess(true);
     } catch (e: any) {
       setSubmitError(e?.message || "Failed to save pond. Try again.");
     } finally {
@@ -302,8 +311,6 @@ export default function AddPondModal({ open, onClose }: Props) {
   }
 
   if (!open) return null;
-
-  const canConfirm = location.trim() && municipality.trim() && province.trim() && region.trim() && lat !== null && lng !== null && !submitting;
 
   const modal = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
@@ -324,8 +331,32 @@ export default function AddPondModal({ open, onClose }: Props) {
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 sm:gap-5 p-4 sm:p-7 overflow-auto">
-          {(isReverseLoading || isAutoFilled || reverseError || submitError) && (
+        {showSuccess ? (
+          <div className="flex flex-col items-center gap-4 p-8 text-center py-10">
+            <div className="size-12 rounded-full bg-admin-green-bg border border-admin-green/20 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+                <circle cx="10" cy="10" r="9" stroke="#006c49" strokeWidth="1.3" />
+                <path d="M6 10.5L9 13L14 7" stroke="#006c49" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h3 className="text-[18px] font-bold text-admin-text">Pond added successfully</h3>
+            <p className="text-sm text-admin-text-secondary leading-5 max-w-[320px]">
+              {created ? `${created.location} — ${created.municipality} is now in AqWaNetIO.` : "Your new pond is now saved."}
+            </p>
+            <button
+              onClick={() => {
+                setShowSuccess(false);
+                onClose();
+              }}
+              className="mt-2 px-6 py-2.5 rounded-full bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] shadow-md hover:shadow-lg hover:-translate-y-px transition"
+            >
+              DONE
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:gap-5 p-4 sm:p-7 overflow-auto">
+              {(isReverseLoading || isAutoFilled || reverseError || submitError) && (
             <div className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-[11px] ${submitError || reverseError ? "bg-amber-100 text-amber-900 border border-amber-400" : isReverseLoading ? "bg-admin-bg text-admin-text-secondary border border-admin-border" : "bg-admin-green-bg text-admin-green-text border border-admin-green/20"}`}>
               <span className="flex items-center gap-2">
                 {isReverseLoading ? "Locating address…" : submitError ? submitError : reverseError ? reverseError : "Auto-filled from map pin"}
@@ -367,11 +398,11 @@ export default function AddPondModal({ open, onClose }: Props) {
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-bold tracking-[0.8px] text-admin-text-secondary">PROVINCE</span>
+              <span className="text-[10px] font-bold tracking-[0.8px] text-admin-text-secondary">PROVINCE <span className="font-normal normal-case text-admin-text-muted">(optional)</span></span>
               <input
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                placeholder={isAutoFilled ? "— from map —" : "e.g. Camarines Norte"}
+                placeholder={isAutoFilled ? "— from map (optional) —" : "e.g. Camarines Norte (optional)"}
                 readOnly={isAutoFilled}
                 className={`w-full rounded-xl border px-4 py-2.5 text-sm placeholder:text-admin-text-muted/60 focus:outline-none transition ${isAutoFilled ? "border-admin-border bg-admin-gray-100 text-admin-text cursor-not-allowed" : "border-admin-border/70 bg-white text-admin-text focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green"}`}
               />
@@ -474,6 +505,8 @@ export default function AddPondModal({ open, onClose }: Props) {
             {submitting ? "SAVING…" : "CONFIRM"}
           </button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
