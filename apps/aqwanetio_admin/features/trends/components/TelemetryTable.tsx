@@ -6,21 +6,21 @@ const telemetryRows = [
 
 export default function TelemetryTable() {
   return (
-    <section className="lg:col-span-12 min-w-0 bg-white border border-[#c4c6ce] rounded-[2px] overflow-x-auto">
-      <div className="bg-[#eceef0] flex items-center justify-between px-6 py-4">
-        <h3 className="text-[11px] font-bold text-[#000f22] tracking-[0.55px] uppercase">Recent Telemetry Records</h3>
+    <section className="lg:col-span-12 min-w-0 bg-admin-surface border border-admin-border rounded-sm overflow-x-auto">
+      <div className="bg-admin-gray-100 flex items-center justify-between px-6 py-4">
+        <h3 className="text-[11px] font-bold text-admin-text tracking-[0.55px] uppercase">Recent Telemetry Records</h3>
         <div className="flex gap-4">
-          <span className="text-[10px] text-[#43474d]">Rows: 48,291</span>
-          <span className="text-[10px] text-[#43474d]">Health: 100%</span>
+          <span className="text-[10px] text-admin-text-secondary">Rows: 48,291</span>
+          <span className="text-[10px] text-admin-text-secondary">Health: 100%</span>
         </div>
       </div>
-      <table className="w-full">
+      <table className="w-full min-w-[640px]">
         <thead>
-          <tr className="bg-[#f2f4f6] border-b border-[#c4c6ce]">
+          <tr className="bg-admin-sidebar border-b border-admin-border">
             {["Timestamp", "Dissolved O2", "Temperature", "pH Level", "Salinity", "Status"].map((h, i) => (
               <th
                 key={h}
-                className={`px-4 py-3 text-[11px] font-bold text-[#43474d] tracking-[0.55px] ${
+                className={`px-4 py-3 text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] ${
                   i === 5 ? "text-right" : "text-left"
                 }`}
               >
@@ -31,16 +31,16 @@ export default function TelemetryTable() {
         </thead>
         <tbody>
           {telemetryRows.map((row, i) => (
-            <tr key={i} className={i > 0 ? "border-t border-[#c4c6ce]" : ""}>
-              <td className="px-4 py-3 text-[13px] font-mono font-medium text-[#191c1e]">{row.time}</td>
-              <td className="px-4 py-3 text-[13px] font-mono font-medium text-[#191c1e]">{row.o2}</td>
-              <td className="px-4 py-3 text-[13px] font-mono font-medium text-[#191c1e]">{row.temp}</td>
-              <td className="px-4 py-3 text-[13px] font-mono font-medium text-[#191c1e]">{row.ph}</td>
-              <td className="px-4 py-3 text-[13px] font-mono font-medium text-[#191c1e]">{row.salinity}</td>
+            <tr key={i} className={i > 0 ? "border-t border-admin-border" : ""}>
+              <td className="px-4 py-3 text-[13px] font-mono font-medium text-admin-gray-400">{row.time}</td>
+              <td className="px-4 py-3 text-[13px] font-mono font-medium text-admin-gray-400">{row.o2}</td>
+              <td className="px-4 py-3 text-[13px] font-mono font-medium text-admin-gray-400">{row.temp}</td>
+              <td className="px-4 py-3 text-[13px] font-mono font-medium text-admin-gray-400">{row.ph}</td>
+              <td className="px-4 py-3 text-[13px] font-mono font-medium text-admin-gray-400">{row.salinity}</td>
               <td className="px-4 py-3 text-right">
                 <div className="flex gap-2 items-center justify-end">
-                  <div className="size-2 rounded-full bg-[#006c49]" />
-                  <span className="text-[13px] font-mono font-medium text-[#191c1e]">Normal</span>
+                  <div className="size-2 rounded-full bg-admin-green" />
+                  <span className="text-[13px] font-mono font-medium text-admin-gray-400">Normal</span>
                 </div>
               </td>
             </tr>

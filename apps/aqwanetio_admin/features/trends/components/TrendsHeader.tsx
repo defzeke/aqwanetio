@@ -11,33 +11,33 @@ export default function TrendsHeader() {
     <header className="flex flex-wrap gap-4 items-end justify-between w-full">
       <div className="flex flex-col gap-2">
         <nav className="flex gap-2 items-center text-[11px] font-bold tracking-[0.55px]">
-          <span className="text-[#43474d]">Fleet View</span>
+          <span className="text-admin-text-secondary">Fleet View</span>
           <ChevronIcon />
-          <span className="text-[#43474d]">Node 01</span>
+          <span className="text-admin-text-secondary">Node 01</span>
           <ChevronIcon />
-          <span className="text-[#000f22]">Pond A-12 Trends</span>
+          <span className="text-admin-text">Pond A-12 Trends</span>
         </nav>
-        <h1 className="text-[32px] font-bold text-[#000f22] tracking-[-0.64px] leading-10">
+        <h1 className="text-[32px] font-bold text-admin-text tracking-[-0.64px] leading-10">
           Historical Performance &amp; Biomass
         </h1>
       </div>
       <div className="flex gap-3 items-center">
-        <div className="bg-[#eceef0] border border-[#c4c6ce] rounded-[2px] flex items-start p-[5px]">
+        <div className="bg-admin-gray-100 border border-admin-border rounded-sm flex items-start p-[5px]">
           {ranges.map((r) => (
             <button
               key={r}
               onClick={() => setActive(r)}
-              className={`px-4 py-1.5 rounded-[2px] text-[11px] font-bold tracking-[0.55px] ${
+              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold tracking-[0.55px] ${
                 active === r
-                  ? "bg-white drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)] text-[#191c1e]"
-                  : "text-[#43474d]"
+                  ? "bg-admin-surface drop-shadow-sm text-admin-gray-400"
+                  : "text-admin-text-secondary"
               }`}
             >
               {r}
             </button>
           ))}
         </div>
-        <button className="bg-[#000f22] drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)] rounded-[2px] flex items-center gap-8 pl-4 pr-[46px] py-2 text-[11px] font-bold text-white tracking-[0.55px]">
+        <button className="bg-admin-text drop-shadow-sm rounded-sm flex items-center gap-8 pl-4 pr-6 py-2 text-[11px] font-bold text-white tracking-[0.55px]">
           <DownloadIcon />
           Export Data (CSV/PDF)
         </button>

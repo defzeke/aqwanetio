@@ -14,26 +14,26 @@ const histogramBars = [
 
 export default function ErrorDistributionCard() {
   return (
-    <section className="col-span-8 bg-white border border-[#e2e8f0] rounded-[8px] flex flex-col gap-4 p-[25px] pb-[42px]">
+    <section className="col-span-12 lg:col-span-8 bg-admin-surface border border-admin-border rounded-sm flex flex-col gap-4 p-6">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-[16px] text-[#000f22]">Error Distribution Profile</h3>
-          <p className="text-[16px] text-[#43474d] leading-6">
+          <h3 className="text-[16px] text-admin-text">Error Distribution Profile</h3>
+          <p className="text-[16px] text-admin-text-secondary leading-6">
             Comparative analysis: Live residuals vs. Training baseline (Validation FIG 7-9)
           </p>
         </div>
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center">
-            <div className="size-[12px] rounded-[12px] bg-[#000f22]" />
-            <span className="text-[10px] text-[#191c1e]">Live Error</span>
+            <div className="size-[12px] rounded-[12px] bg-admin-text" />
+            <span className="text-[10px] text-admin-gray-400">Live Error</span>
           </div>
           <div className="flex gap-2 items-center">
             <div className="size-3 rounded-[12px] bg-[#c4c6ce]" />
-            <span className="text-[10px] text-[#191c1e]">Baseline</span>
+            <span className="text-[10px] text-admin-gray-400">Baseline</span>
           </div>
         </div>
       </div>
-      <div className="relative h-[272px] w-full pt-4 border-b border-l border-[#c4c6ce] px-[9px]">
+      <div className="relative h-[272px] w-full pt-4 border-b border-l border-admin-border px-[9px]">
         <div className="flex items-end justify-between h-full gap-1 relative">
           {histogramBars.map((bar, i) => (
             <div
@@ -55,7 +55,7 @@ export default function ErrorDistributionCard() {
           />
         </svg>
       </div>
-      <div className="flex justify-between text-[10px] font-mono font-medium text-[#43474d]">
+      <div className="flex justify-between text-[10px] font-mono font-medium text-admin-text-secondary">
         <span>-0.05 Residual</span>
         <span>0.00 Median</span>
         <span>+0.05 Residual</span>

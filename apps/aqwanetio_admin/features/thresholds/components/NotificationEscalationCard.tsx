@@ -6,29 +6,29 @@ const recipients = [
 export default function NotificationEscalationCard() {
   const channelIcons = [<SmsIcon />, <ChatIcon />, <BellIcon />];
   return (
-    <section className="col-span-5 bg-white border border-[#c4c6ce] rounded-[2px] drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 p-[25px] pb-[101px]">
+    <section className="col-span-12 lg:col-span-5 bg-admin-surface border border-admin-border rounded-sm drop-shadow-sm flex flex-col gap-6 p-6">
       <div className="flex gap-2 items-center">
         <EscalationIcon />
-        <h2 className="text-[20px] font-semibold text-[#000f22]">Notification Escalation</h2>
+        <h2 className="text-[20px] font-semibold text-admin-text">Notification Escalation</h2>
       </div>
       <div className="flex flex-col gap-4">
         {recipients.map((r) => (
-          <div key={r.name} className="bg-[#f2f4f6] rounded-[2px] flex items-center justify-between pl-[13px] pr-[13px] py-[13px]">
+          <div key={r.name} className="bg-admin-sidebar rounded-sm flex items-center justify-between pl-[13px] pr-[13px] py-[13px]">
             <div className="flex gap-3 items-center">
               <div className="size-10 rounded-[12px] flex items-center justify-center" style={{ backgroundColor: r.avatarBg, color: r.avatarText }}>
                 <span className="text-[14px] font-bold">{r.initials}</span>
               </div>
               <div>
-                <p className="text-[11px] font-bold text-[#191c1e] tracking-[0.55px]">{r.name}</p>
-                <p className="text-[12px] text-[#43474d]">{r.role}</p>
+                <p className="text-[11px] font-bold text-admin-gray-400 tracking-[0.55px]">{r.name}</p>
+                <p className="text-[12px] text-admin-text-secondary">{r.role}</p>
               </div>
             </div>
             <div className="flex gap-2">
               {r.channels.map((on, i) => (
                 <button
                   key={i}
-                  className={`size-8 rounded-[2px] flex items-center justify-center ${
-                    on ? "bg-[#0a2540] text-[#768dad]" : "bg-[#e6e8ea] text-[#74777e]"
+                  className={`size-8 rounded-sm flex items-center justify-center ${
+                    on ? "bg-admin-nav-active text-admin-text-muted" : "bg-admin-gray-100 text-admin-gray-300"
                   }`}
                 >
                   {channelIcons[i]}
@@ -38,7 +38,7 @@ export default function NotificationEscalationCard() {
           </div>
         ))}
       </div>
-      <button className="border border-dashed border-[#c4c6ce] flex items-center justify-center py-[9px] text-[11px] font-bold text-[#43474d] tracking-[0.55px]">
+      <button className="border border-dashed border-admin-border flex items-center justify-center py-2 text-[11px] font-bold text-admin-text-secondary tracking-[0.55px]">
         + ADD RECIPIENT
       </button>
     </section>

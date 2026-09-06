@@ -17,11 +17,24 @@ const bottomLinks = [
   { href: "/support", label: "SUPPORT", icon: <SupportIcon />, disabled: true },
 ];
 
-export default function SideNavBar() {
+export default function SideNavBar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-16 w-[280px] h-[calc(100vh-64px)] bg-[#f2f4f6] border-r border-[#c4c6ce] flex flex-col justify-between overflow-auto py-6">
+    <>
+      {/* backdrop for mobile */}
+      {open && (
+        <div
+          aria-hidden
+          onClick={onClose}
+          className="fixed inset-0 top-16 bg-black/30 z-10 lg:hidden"
+        />
+      )}
+      <aside
+        className={`fixed left-0 top-16 w-[280px] h-[calc(100vh-64px)] bg-admin-sidebar border-r border-admin-border flex flex-col justify-between overflow-auto py-6 z-20 transition-transform duration-200 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       <div className="flex flex-col gap-8 items-center w-full">
         <PondSelector />
         <nav className="flex flex-col gap-1 w-full px-4">
@@ -35,10 +48,21 @@ export default function SideNavBar() {
             />
           ))}
         </nav>
-        <button className="flex gap-2 items-center justify-center bg-[#000f22] text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px]">
-          <AddIcon />
-          ADD NEW POND
-        </button>
+        <div className="flex flex-col gap-2 items-center">
+          <button className="flex gap-2 items-center justify-center bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px]">
+            <AddIcon />
+            ADD NEW POND
+          </button>
+          {/* ponytail: disabled placeholder, enable + Link to /ownership-claims when feature lands */}
+          <button
+            disabled
+            aria-disabled="true"
+            title="Coming soon — ownership claims review"
+            className="flex gap-2 items-center justify-center bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px] opacity-50 cursor-not-allowed"
+          >
+            REVIEW OWNERSHIP CLAIMS
+          </button>
+        </div>
       </div>
       <nav className="flex flex-col gap-1 w-full px-4">
         {bottomLinks.map((link) => (
@@ -52,7 +76,8 @@ export default function SideNavBar() {
           />
         ))}
       </nav>
-    </aside>
+      </aside>
+    </>
   );
 }
 
