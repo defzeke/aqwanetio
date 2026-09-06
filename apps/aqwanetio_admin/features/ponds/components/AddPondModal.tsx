@@ -268,9 +268,42 @@ export default function AddPondModal({ open, onClose }: Props) {
     setQ("");
   }
 
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setSubmitError(null);
+      setSubmitting(false);
+    }
+  }, [open]);
+
+  async function handleConfirm() {
+    if (!canConfirm || lat === null || lng === null) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const api = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${api}/stations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location: location.trim(), municipality: municipality.trim(), province: province.trim(), region: region.trim(), latitude: lat, longitude: lng }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.detail || `HTTP ${res.status}`);
+      }
+      onClose();
+    } catch (e: any) {
+      setSubmitError(e?.message || "Failed to save pond. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (!open) return null;
 
-  const canConfirm = location.trim() && municipality.trim() && province.trim() && region.trim() && lat !== null && lng !== null;
+  const canConfirm = location.trim() && municipality.trim() && province.trim() && region.trim() && lat !== null && lng !== null && !submitting;
 
   const modal = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
@@ -292,17 +325,18 @@ export default function AddPondModal({ open, onClose }: Props) {
         </div>
 
         <div className="flex flex-col gap-4 sm:gap-5 p-4 sm:p-7 overflow-auto">
-          {(isReverseLoading || isAutoFilled || reverseError) && (
-            <div className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-[11px] ${reverseError ? "bg-amber-100 text-amber-900 border border-amber-400" : isReverseLoading ? "bg-admin-bg text-admin-text-secondary border border-admin-border" : "bg-admin-green-bg text-admin-green-text border border-admin-green/20"}`}>
+          {(isReverseLoading || isAutoFilled || reverseError || submitError) && (
+            <div className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-[11px] ${submitError || reverseError ? "bg-amber-100 text-amber-900 border border-amber-400" : isReverseLoading ? "bg-admin-bg text-admin-text-secondary border border-admin-border" : "bg-admin-green-bg text-admin-green-text border border-admin-green/20"}`}>
               <span className="flex items-center gap-2">
-                {isReverseLoading ? "Locating address…" : reverseError ? reverseError : "Auto-filled from map pin"}
+                {isReverseLoading ? "Locating address…" : submitError ? submitError : reverseError ? reverseError : "Auto-filled from map pin"}
                 {isReverseLoading && <span className="size-3 animate-spin rounded-full border-2 border-admin-green border-t-transparent" />}
               </span>
-              {(isAutoFilled || reverseError) && (
+              {(isAutoFilled || reverseError || submitError) && (
                 <button
                   onClick={() => {
                     setIsAutoFilled(false);
                     setReverseError(null);
+                    setSubmitError(null);
                   }}
                   className="text-[11px] font-bold underline hover:no-underline"
                 >
@@ -433,15 +467,11 @@ export default function AddPondModal({ open, onClose }: Props) {
           </button>
           <button
             disabled={!canConfirm}
-            onClick={() => {
-              console.log({ location, municipality, province, region, latitude: lat, longitude: lng });
-              onClose();
-            }}
-            className={`px-6 py-2.5 rounded-full text-[11px] font-bold tracking-[0.55px] text-white shadow-md transition ${
-              canConfirm ? "bg-admin-text hover:shadow-lg hover:-translate-y-px" : "bg-admin-text opacity-50 cursor-not-allowed"
-            }`}
+            onClick={handleConfirm}
+            className={`px-6 py-2.5 rounded-full text-[11px] font-bold tracking-[0.55px] text-white shadow-md transition flex items-center gap-2 ${canConfirm ? "bg-admin-text hover:shadow-lg hover:-translate-y-px" : "bg-admin-text opacity-50 cursor-not-allowed"}`}
           >
-            CONFIRM
+            {submitting && <span className="size-3 animate-spin rounded-full border-2 border-white border-t-transparent" />}
+            {submitting ? "SAVING…" : "CONFIRM"}
           </button>
         </div>
       </div>
