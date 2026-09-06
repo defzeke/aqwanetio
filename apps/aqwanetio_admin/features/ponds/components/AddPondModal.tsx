@@ -12,10 +12,54 @@ export default function AddPondModal({ open, onClose }: Props) {
   const [region, setRegion] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+  const [isAutoFilled, setIsAutoFilled] = useState(false);
+  const [isReverseLoading, setIsReverseLoading] = useState(false);
+  const [reverseError, setReverseError] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
+  const lastFetchRef = useRef(0);
+
+  async function reverseAndFill(lat: number, lng: number) {
+    const now = Date.now();
+    if (now - lastFetchRef.current < 1100) return; // ponytail: Nominatim 1 req/sec
+    lastFetchRef.current = now;
+    setIsReverseLoading(true);
+    setReverseError(null);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&zoom=18&accept-language=en`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      const a: any = data.address || {};
+      // ponytail: PH address mapping — city/town/village → municipality, county/state → province
+      const muni = a.city || a.town || a.municipality || a.village || a.hamlet || "";
+      const prov = a.province || a.state || a.county || "";
+      const reg = a.region || a.state_district || a.state || "";
+      const loc = a.road || a.hamlet || a.suburb || a.village || a.neighbourhood || (data.display_name ? data.display_name.split(",")[0] : "") || "";
+      if (muni) setMunicipality(muni);
+      if (prov) setProvince(prov);
+      if (reg) setRegion(reg);
+      if (loc) setLocation(loc);
+      setIsAutoFilled(true);
+      if (!muni && !prov && !reg) {
+        setReverseError("Pin is over water or unmapped area — fill manually or click Edit.");
+        setIsAutoFilled(false);
+      }
+    } catch {
+      setReverseError("Couldn’t resolve address — type manually or click Edit.");
+      setIsAutoFilled(false);
+    } finally {
+      setIsReverseLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (open) {
@@ -25,6 +69,13 @@ export default function AddPondModal({ open, onClose }: Props) {
       setRegion("");
       setLat(null);
       setLng(null);
+      setIsAutoFilled(false);
+      setIsReverseLoading(false);
+      setReverseError(null);
+      setQ("");
+      setSuggestions([]);
+      setSearchLoading(false);
+      setSearchError(null);
     }
   }, [open]);
 
@@ -105,6 +156,7 @@ export default function AddPondModal({ open, onClose }: Props) {
         if (!insidePH(clat, clng)) return;
         setLat(clat);
         setLng(clng);
+        reverseAndFill(clat, clng);
         if (markerRef.current) markerRef.current.setLngLat([clng, clat]);
         else {
           const el = document.createElement("div");
@@ -118,6 +170,7 @@ export default function AddPondModal({ open, onClose }: Props) {
             if (!insidePH(pos.lat, pos.lng)) return;
             setLat(pos.lat);
             setLng(pos.lng);
+            reverseAndFill(pos.lat, pos.lng);
           });
         }
       });
@@ -147,6 +200,74 @@ export default function AddPondModal({ open, onClose }: Props) {
     return () => window.removeEventListener("keydown", h);
   }, [open, onClose]);
 
+  async function doSearch() {
+    const query = q.trim();
+    if (!query) return;
+    const now = Date.now();
+    if (now - lastFetchRef.current < 1100) return;
+    lastFetchRef.current = now;
+    setSearchLoading(true);
+    setSearchError(null);
+    setSuggestions([]);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ph&viewbox=116,21.5,127.5,4&bounded=1&limit=5&addressdetails=1&accept-language=en`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      if (!res.ok) throw new Error(String(res.status));
+      const data: Array<{ display_name: string; lat: string; lon: string }> = await res.json();
+      if (!data.length) {
+        setSearchError("No place found in Philippines — try barangay + municipality.");
+      } else {
+        setSuggestions(data);
+        // auto-fly to first result for speed (still show list)
+        const first = data[0];
+        flyToAndPin(parseFloat(first.lat), parseFloat(first.lon));
+      }
+    } catch {
+      setSearchError("Search failed — try again.");
+    } finally {
+      setSearchLoading(false);
+    }
+  }
+
+  function flyToAndPin(flat: number, flng: number) {
+    const map = mapInstance.current;
+    if (!map) {
+      setLat(flat);
+      setLng(flng);
+      reverseAndFill(flat, flng);
+      return;
+    }
+    map.flyTo({ center: [flng, flat], zoom: 14, duration: 1200 });
+    setLat(flat);
+    setLng(flng);
+    reverseAndFill(flat, flng);
+    // ensure marker at new spot
+    setTimeout(() => {
+      if (markerRef.current) markerRef.current.setLngLat([flng, flat]);
+      else if (map) {
+        import("maplibre-gl").then((ml) => {
+          const el = document.createElement("div");
+          el.style.width = "14px";
+          el.style.height = "14px";
+          el.style.background = "#006c49";
+          el.className = "size-3.5 rounded-full bg-admin-green border-2 border-white shadow-md";
+          markerRef.current = new ml.Marker({ element: el, draggable: true }).setLngLat([flng, flat]).addTo(map);
+          markerRef.current.on("dragend", () => {
+            const pos = markerRef.current.getLngLat();
+            if (pos.lat < 4.0 || pos.lat > 21.5 || pos.lng < 116.0 || pos.lng > 127.5) return;
+            setLat(pos.lat);
+            setLng(pos.lng);
+            reverseAndFill(pos.lat, pos.lng);
+          });
+        });
+      }
+    }, 200);
+    setSuggestions([]);
+    setQ("");
+  }
+
   if (!open) return null;
 
   const canConfirm = location.trim() && municipality.trim() && province.trim() && region.trim() && lat !== null && lng !== null;
@@ -171,14 +292,34 @@ export default function AddPondModal({ open, onClose }: Props) {
         </div>
 
         <div className="flex flex-col gap-4 sm:gap-5 p-4 sm:p-7 overflow-auto">
+          {(isReverseLoading || isAutoFilled || reverseError) && (
+            <div className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-[11px] ${reverseError ? "bg-amber-100 text-amber-900 border border-amber-400" : isReverseLoading ? "bg-admin-bg text-admin-text-secondary border border-admin-border" : "bg-admin-green-bg text-admin-green-text border border-admin-green/20"}`}>
+              <span className="flex items-center gap-2">
+                {isReverseLoading ? "Locating address…" : reverseError ? reverseError : "Auto-filled from map pin"}
+                {isReverseLoading && <span className="size-3 animate-spin rounded-full border-2 border-admin-green border-t-transparent" />}
+              </span>
+              {(isAutoFilled || reverseError) && (
+                <button
+                  onClick={() => {
+                    setIsAutoFilled(false);
+                    setReverseError(null);
+                  }}
+                  className="text-[11px] font-bold underline hover:no-underline"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="flex flex-col gap-1.5">
               <span className="text-[10px] font-bold tracking-[0.8px] text-admin-text-secondary">LOCATION</span>
               <input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Sitio Bagasbas"
-                className="w-full rounded-xl border border-admin-border/70 bg-white px-4 py-2.5 text-sm text-admin-text placeholder:text-admin-text-muted/60 focus:outline-none focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green transition"
+                placeholder={isAutoFilled ? "— from map —" : "e.g. Sitio Bagasbas"}
+                readOnly={isAutoFilled}
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm placeholder:text-admin-text-muted/60 focus:outline-none transition ${isAutoFilled ? "border-admin-border bg-admin-gray-100 text-admin-text cursor-not-allowed" : "border-admin-border/70 bg-white text-admin-text focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green"}`}
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -186,8 +327,9 @@ export default function AddPondModal({ open, onClose }: Props) {
               <input
                 value={municipality}
                 onChange={(e) => setMunicipality(e.target.value)}
-                placeholder="e.g. Daet"
-                className="w-full rounded-xl border border-admin-border/70 bg-white px-4 py-2.5 text-sm text-admin-text placeholder:text-admin-text-muted/60 focus:outline-none focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green transition"
+                placeholder={isAutoFilled ? "— from map —" : "e.g. Daet"}
+                readOnly={isAutoFilled}
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm placeholder:text-admin-text-muted/60 focus:outline-none transition ${isAutoFilled ? "border-admin-border bg-admin-gray-100 text-admin-text cursor-not-allowed" : "border-admin-border/70 bg-white text-admin-text focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green"}`}
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -195,8 +337,9 @@ export default function AddPondModal({ open, onClose }: Props) {
               <input
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                placeholder="e.g. Camarines Norte"
-                className="w-full rounded-xl border border-admin-border/70 bg-white px-4 py-2.5 text-sm text-admin-text placeholder:text-admin-text-muted/60 focus:outline-none focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green transition"
+                placeholder={isAutoFilled ? "— from map —" : "e.g. Camarines Norte"}
+                readOnly={isAutoFilled}
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm placeholder:text-admin-text-muted/60 focus:outline-none transition ${isAutoFilled ? "border-admin-border bg-admin-gray-100 text-admin-text cursor-not-allowed" : "border-admin-border/70 bg-white text-admin-text focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green"}`}
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -204,20 +347,58 @@ export default function AddPondModal({ open, onClose }: Props) {
               <input
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                placeholder="e.g. Region V"
-                className="w-full rounded-xl border border-admin-border/70 bg-white px-4 py-2.5 text-sm text-admin-text placeholder:text-admin-text-muted/60 focus:outline-none focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green transition"
+                placeholder={isAutoFilled ? "— from map —" : "e.g. Region V"}
+                readOnly={isAutoFilled}
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm placeholder:text-admin-text-muted/60 focus:outline-none transition ${isAutoFilled ? "border-admin-border bg-admin-gray-100 text-admin-text cursor-not-allowed" : "border-admin-border/70 bg-white text-admin-text focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green"}`}
               />
             </label>
           </div>
 
           <div className="flex flex-col gap-2">
             <span className="text-[10px] font-bold tracking-[0.8px] text-admin-text-secondary">PICK EXACT LOCATION</span>
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-admin-text-muted">⌕</span>
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") doSearch();
+                    if (e.key === "Escape") setSuggestions([]);
+                  }}
+                  placeholder="Search barangay, municipality… e.g. Bagasbas Daet"
+                  className="w-full rounded-xl border border-admin-border/70 bg-white pl-9 pr-3 py-2.5 text-sm text-admin-text placeholder:text-admin-text-muted/60 focus:outline-none focus:ring-2 focus:ring-admin-green/20 focus:border-admin-green transition"
+                />
+                {suggestions.length > 0 && (
+                  <ul className="absolute z-10 mt-1 w-full bg-white border border-admin-border rounded-xl shadow-lg max-h-[180px] overflow-auto">
+                    {suggestions.map((s, i) => (
+                      <li key={i}>
+                        <button
+                          onClick={() => flyToAndPin(parseFloat(s.lat), parseFloat(s.lon))}
+                          className="w-full text-left px-3 py-2.5 text-sm text-admin-text hover:bg-admin-bg border-b last:border-0 border-admin-border/30"
+                        >
+                          {s.display_name.split(",").slice(0, 3).join(", ")}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button
+                onClick={doSearch}
+                disabled={!q.trim() || searchLoading}
+                className={`px-4 rounded-xl text-[11px] font-bold tracking-[0.55px] text-white shadow-md transition ${!q.trim() || searchLoading ? "bg-admin-text opacity-50 cursor-not-allowed" : "bg-admin-text hover:shadow-lg"}`}
+              >
+                {searchLoading ? "…" : "SEARCH"}
+              </button>
+            </div>
+            {searchError && <p className="text-[11px] text-admin-red">{searchError}</p>}
             <div
               ref={mapRef}
               className="h-[220px] sm:h-[280px] lg:h-[340px] w-full rounded-xl ring-1 ring-black/5 overflow-hidden bg-admin-sidebar shadow-inner"
             />
             <p className="text-[11px] text-admin-text-muted flex items-center gap-1.5">
-              <span className="inline-block size-1.5 rounded-full bg-admin-green" /> Click map to drop pin • Drag pin to adjust • Philippines auto-framed
+              <span className="inline-block size-1.5 rounded-full bg-admin-green" /> Click map to drop pin • Drag pin to adjust • Philippines auto-framed • Or search above to fly there
             </p>
           </div>
 
