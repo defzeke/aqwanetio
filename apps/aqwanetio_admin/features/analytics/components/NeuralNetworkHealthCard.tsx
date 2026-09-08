@@ -1,6 +1,6 @@
 export default function NeuralNetworkHealthCard() {
   return (
-    <section className="col-span-12 bg-gradient-to-r from-[rgba(0,15,34,0.8)] to-[rgba(0,15,34,0)] rounded-[8px] overflow-clip flex items-center px-12 h-[192px]">
+    <section className="col-span-12 bg-gradient-to-r from-[rgba(0,15,34,0.8)] to-[rgba(0,15,34,0)] rounded-sm overflow-clip flex items-center px-12 h-[192px]">
       <div>
         <h3 className="text-[16px] text-white">Neural Network Health</h3>
         <p className="text-[14px] text-[#b0c8eb] leading-5 mt-1">

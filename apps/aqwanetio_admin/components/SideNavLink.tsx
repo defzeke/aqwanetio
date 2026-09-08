@@ -11,8 +11,8 @@ interface SideNavLinkProps {
 export default function SideNavLink({ href, icon, label, active, disabled }: SideNavLinkProps) {
   const className = `flex gap-4 items-center px-4 py-3 w-full text-[11px] font-bold tracking-[0.55px] ${
     active
-      ? "bg-[#0a2540] border-r-4 border-[#000f22] text-[#768dad] rounded-r"
-      : "text-[#43474d]"
+      ? "bg-admin-nav-active border-r-4 border-admin-nav-border text-admin-text-muted rounded-r"
+      : "text-admin-text-secondary"
   }`;
 
   if (disabled) {

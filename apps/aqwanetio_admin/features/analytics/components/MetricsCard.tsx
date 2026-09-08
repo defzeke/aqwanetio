@@ -5,17 +5,17 @@ const accuracyMetrics = [
 
 export default function MetricsCard() {
   return (
-    <section className="col-span-4 bg-white border border-[#e2e8f0] rounded-[8px] relative overflow-clip flex flex-col justify-between p-[25px] pb-[91px]">
+    <section className="col-span-12 lg:col-span-4 bg-admin-surface border border-admin-border rounded-sm relative overflow-clip flex flex-col justify-between p-6">
       <MetricsSparkline />
-      <h3 className="text-[11px] font-bold text-[#43474d] tracking-[0.55px] uppercase">Current Accuracy Metrics</h3>
+      <h3 className="text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] uppercase">Current Accuracy Metrics</h3>
       <div className="flex flex-col gap-6 mt-6">
         {accuracyMetrics.map((m) => (
           <div key={m.label} className="flex flex-col gap-1">
             <div className="flex items-end justify-between">
-              <span className="text-[16px] text-[#43474d] leading-6">{m.label}</span>
-              <span className="text-[20px] font-mono font-medium text-[#000f22] leading-7">{m.value}</span>
+              <span className="text-[16px] text-admin-text-secondary leading-6">{m.label}</span>
+              <span className="text-[20px] font-mono font-medium text-admin-text leading-7">{m.value}</span>
             </div>
-            <div className="bg-[#e0e3e5] h-[6px] rounded-[12px] w-full overflow-clip">
+            <div className="bg-admin-gray-200 h-[6px] rounded-[12px] w-full overflow-clip">
               <div className="h-full rounded-[12px]" style={{ width: `${m.fill}%`, backgroundColor: m.color }} />
             </div>
           </div>

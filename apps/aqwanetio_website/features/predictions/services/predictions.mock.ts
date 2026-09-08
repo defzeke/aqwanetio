@@ -1,18 +1,17 @@
 import type { Prediction, PredictionsService } from "./predictions.service";
 
-function buildPredictions(seed: number): Prediction[] {
-  const now = Date.now();
-  const phase = seed * 1.3;
+function buildPredictions(seed: number, endTs: number = Date.now()): Prediction[] {
+  const phase = seed * 1.3 + (endTs / 3_600_000) * 0.35;
   return Array.from({ length: 6 }, (_, i) => {
     const hoursAhead = i + 1;
     const predicted = Math.max(
       0,
-      0.3 + Math.sin((now / 3_600_000 + hoursAhead + phase) / 6) * 0.2
+      0.3 + Math.sin((endTs / 3_600_000 + hoursAhead + phase) / 6) * 0.2
            + Math.sin(hoursAhead * 5.1 + seed) * 0.03
     );
     const bias = -0.014;
     return {
-      timestamp: new Date(now + hoursAhead * 3_600_000).toISOString(),
+      timestamp: new Date(endTs + hoursAhead * 3_600_000).toISOString(),
       predictedAmmonia: +(predicted + bias).toFixed(3),
       upperBound: +(predicted + bias + 0.1).toFixed(3),
       lowerBound: +Math.max(0, predicted + bias - 0.1).toFixed(3),
@@ -36,6 +35,7 @@ const predictionsCache = new Map<string, Prediction[]>(
 export const mockPredictionsService: PredictionsService = {
   getPrediction: (pondId) =>
     predictionsCache.get(pondId) ?? buildPredictions(seedFor(pondId)),
+  getPredictionAt: (pondId, endTs) => buildPredictions(seedFor(pondId), endTs),
   getStlDecomposition: (pondId) => {
     const s = seedFor(pondId);
     return {

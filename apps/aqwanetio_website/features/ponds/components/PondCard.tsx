@@ -8,10 +8,10 @@ const statusStyles: Record<string, string> = {
 
 export default function PondCard({ pond }: { pond: Pond }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border bg-surface p-4">
+    <div className="neu-surface-sm flex items-center justify-between p-4">
       <div>
-        <h3 className="text-sm font-semibold text-text">{pond.name}</h3>
-        <p className="mt-0.5 text-xs text-text-muted">NH₃: {pond.ammoniaLevel} ppm</p>
+        <h3 className="text-sm font-semibold text-ink">{pond.name}</h3>
+        <p className="mt-0.5 text-xs text-muted">NH₃: {pond.ammoniaLevel} ppm</p>
       </div>
       <span
         className={`rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${

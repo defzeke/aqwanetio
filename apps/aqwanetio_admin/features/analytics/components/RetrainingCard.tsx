@@ -5,25 +5,25 @@ const retrainingRows = [
 
 export default function RetrainingCard() {
   return (
-    <section className="col-span-4 bg-white border border-[#e2e8f0] rounded-[8px] flex flex-col gap-6 p-[25px]">
-      <h3 className="text-[11px] font-bold text-[#43474d] tracking-[0.55px] uppercase">Retraining Lifecycle</h3>
+    <section className="col-span-12 lg:col-span-4 bg-admin-surface border border-admin-border rounded-sm flex flex-col gap-6 p-6">
+      <h3 className="text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] uppercase">Retraining Lifecycle</h3>
       <div>
         {retrainingRows.map((row) => (
-          <div key={row.label} className="border-b border-[#c4c6ce] flex items-center justify-between pt-2 pb-[9px]">
-            <span className="text-[16px] text-[#43474d]">{row.label}</span>
+          <div key={row.label} className="border-b border-admin-border flex items-center justify-between pt-2 pb-[9px]">
+            <span className="text-[16px] text-admin-text-secondary">{row.label}</span>
             <span className="text-[16px] font-mono font-medium" style={{ color: row.valueColor }}>
               {row.value}
             </span>
           </div>
         ))}
         <div className="flex items-center justify-between pt-2 pb-[9px]">
-          <span className="text-[16px] text-[#43474d]">Training Window</span>
-          <span className="text-[16px] font-mono font-medium text-[#000f22]">800 Days</span>
+          <span className="text-[16px] text-admin-text-secondary">Training Window</span>
+          <span className="text-[16px] font-mono font-medium text-admin-text">800 Days</span>
         </div>
       </div>
-      <div className="bg-[#eceef0] rounded-[2px] flex gap-2 items-center px-3 py-2">
+      <div className="bg-admin-gray-100 rounded-sm flex gap-2 items-center px-3 py-2">
         <InfoIcon />
-        <span className="text-[10px] text-[#43474d] leading-[15px]">N=1.2M Datapoints processed</span>
+        <span className="text-[10px] text-admin-text-secondary leading-[15px]">N=1.2M Datapoints processed</span>
       </div>
     </section>
   );

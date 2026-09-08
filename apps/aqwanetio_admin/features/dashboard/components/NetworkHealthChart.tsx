@@ -4,20 +4,20 @@ export default function NetworkHealthChart() {
   const health = nodesService.getNetworkHealth();
 
   return (
-    <div className="col-span-12 row-span-1 bg-[#f7f9fb] border border-[#c4c6ce] rounded-sm p-[25px] flex flex-col gap-4">
+    <div className="col-span-12 row-span-1 bg-admin-bg border border-admin-border rounded-sm p-6 flex flex-col gap-4">
       <div className="flex items-end justify-between w-full">
         <div>
-          <h3 className="text-[20px] font-semibold text-[#000f22]">Network Health</h3>
-          <p className="text-[12px] text-[#43474d]">LoRaWAN packet loss analysis over the last 24h operational cycle.</p>
+          <h3 className="text-[20px] font-semibold text-admin-text">Network Health</h3>
+          <p className="text-[12px] text-admin-text-secondary">LoRaWAN packet loss analysis over the last 24h operational cycle.</p>
         </div>
         <div className="flex gap-6 items-center">
           <div className="flex gap-2 items-center">
-            <div className="size-3 rounded-full bg-[#000f22]" />
-            <span className="text-[11px] font-bold text-[#191c1e] tracking-[0.55px]">Avg Loss: {health.avgLoss}</span>
+            <div className="size-3 rounded-full bg-admin-text" />
+            <span className="text-[11px] font-bold text-admin-gray-400 tracking-[0.55px]">Avg Loss: {health.avgLoss}</span>
           </div>
           <div className="flex gap-2 items-center">
-            <div className="size-3 rounded-full bg-[#ba1a1a]" />
-            <span className="text-[11px] font-bold text-[#191c1e] tracking-[0.55px]">Peak Loss: {health.peakLoss}</span>
+            <div className="size-3 rounded-full bg-admin-red" />
+            <span className="text-[11px] font-bold text-admin-gray-400 tracking-[0.55px]">Peak Loss: {health.peakLoss}</span>
           </div>
         </div>
       </div>
@@ -40,7 +40,7 @@ export default function NetworkHealthChart() {
           ))}
         </div>
       </div>
-      <div className="flex justify-between text-[10px] font-mono font-medium text-[#43474d]">
+      <div className="flex justify-between text-[10px] font-mono font-medium text-admin-text-secondary">
         <span>00:00</span>
         <span>06:00</span>
         <span>12:00</span>

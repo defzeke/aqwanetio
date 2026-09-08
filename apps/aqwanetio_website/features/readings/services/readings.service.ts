@@ -6,4 +6,5 @@ export interface Reading {
 export interface ReadingsService {
   getLatestByPond(pondId: string): Reading | null;
   getByPond(pondId: string, limit?: number): Reading[];
+  getByPondAt(pondId: string, endTs: number, limit?: number): Reading[];
 }

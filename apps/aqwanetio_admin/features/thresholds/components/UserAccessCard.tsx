@@ -1,28 +1,29 @@
 const users = [
-  { initials: "AJ", avatarBg: "#b0c8eb", avatarText: "#314865", name: "Administrator J.", email: "admin@aquasense.ind", role: "SYSTEM ADMIN", roleClass: "bg-[#000f22] text-white", lastLogin: "2023-10-27 10:05" },
-  { initials: "RT", avatarBg: "#e0e3e5", avatarText: "#43474d", name: "Robert T.", email: "r.tech@aquasense.ind", role: "TECHNICIAN", roleClass: "bg-[#e0e3e5] border border-[#c4c6ce] text-[#43474d]", lastLogin: "2023-10-26 16:42" },
+  { initials: "AJ", avatarBg: "#b0c8eb", avatarText: "#314865", name: "Administrator J.", email: "admin@aquasense.ind", role: "SYSTEM ADMIN", roleClass: "bg-admin-text text-white", lastLogin: "2023-10-27 10:05" },
+  { initials: "RT", avatarBg: "#e0e3e5", avatarText: "#43474d", name: "Robert T.", email: "r.tech@aquasense.ind", role: "TECHNICIAN", roleClass: "bg-admin-gray-200 border border-admin-border text-admin-text-secondary", lastLogin: "2023-10-26 16:42" },
 ];
 
 export default function UserAccessCard() {
   return (
-    <section className="col-span-12 bg-white border border-[#c4c6ce] rounded-[2px] overflow-clip shadow-[0px_1px_2px_rgba(0,0,0,0.05)] pb-12">
-      <div className="flex items-center justify-between px-6 pb-[17px] pt-4 border-b border-[#c4c6ce]">
+    <section className="col-span-12 bg-admin-surface border border-admin-border rounded-sm overflow-clip shadow-sm pb-12">
+      <div className="flex items-center justify-between px-6 pb-4 pt-4 border-b border-admin-border">
         <div className="flex gap-2 items-center">
           <UsersIcon />
-          <h2 className="text-[20px] font-semibold text-[#000f22]">User Access Management</h2>
+          <h2 className="text-[20px] font-semibold text-admin-text">User Access Management</h2>
         </div>
-        <button className="border border-[#000f22] rounded-[2px] flex gap-2 items-center px-[13px] py-[7px] text-[11px] font-bold text-[#000f22] tracking-[0.55px]">
+        <button className="border border-admin-nav-border rounded-sm flex gap-2 items-center px-3 py-[7px] text-[11px] font-bold text-admin-text tracking-[0.55px]">
           <UserPlusIcon />
           Invite User
         </button>
       </div>
-      <table className="w-full">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px]">
         <thead>
-          <tr className="bg-[#f2f4f6] border-b border-[#c4c6ce]">
+          <tr className="bg-admin-sidebar border-b border-admin-border">
             {["USER IDENTITY", "SYSTEM ROLE", "LAST LOGIN", "ACTIONS"].map((h, i) => (
               <th
                 key={h}
-                className={`px-6 py-3 text-[11px] font-bold text-[#43474d] tracking-[0.55px] ${
+                className={`px-6 py-3 text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] ${
                   i === 3 ? "text-right" : "text-left"
                 }`}
               >
@@ -33,31 +34,32 @@ export default function UserAccessCard() {
         </thead>
         <tbody>
           {users.map((u, i) => (
-            <tr key={u.name} className={i > 0 ? "border-t border-[#c4c6ce]" : ""}>
+            <tr key={u.name} className={i > 0 ? "border-t border-admin-border" : ""}>
               <td className="px-6 py-4">
                 <div className="flex gap-3 items-center">
-                  <div className="size-8 rounded-[2px] flex items-center justify-center text-[16px] font-bold" style={{ backgroundColor: u.avatarBg, color: u.avatarText }}>
+                  <div className="size-8 rounded-sm flex items-center justify-center text-[16px] font-bold" style={{ backgroundColor: u.avatarBg, color: u.avatarText }}>
                     {u.initials}
                   </div>
                   <div>
-                    <p className="text-[16px] font-bold text-[#191c1e] leading-6">{u.name}</p>
-                    <p className="text-[16px] text-[#43474d] leading-6">{u.email}</p>
+                    <p className="text-[16px] font-bold text-admin-gray-400 leading-6">{u.name}</p>
+                    <p className="text-[16px] text-admin-text-secondary leading-6">{u.email}</p>
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4">
-                <span className={`inline-flex rounded-[2px] px-2 py-0.5 text-[10px] ${u.roleClass}`}>{u.role}</span>
+                <span className={`inline-flex rounded-sm px-2 py-0.5 text-[10px] ${u.roleClass}`}>{u.role}</span>
               </td>
-              <td className="px-6 py-4 text-[13px] font-mono font-medium text-[#191c1e]">{u.lastLogin}</td>
+              <td className="px-6 py-4 text-[13px] font-mono font-medium text-admin-gray-400">{u.lastLogin}</td>
               <td className="px-6 py-4 text-right">
-                <button className="size-5 text-[#74777e]">
+                <button className="size-5 text-admin-gray-300">
                   <GearIcon />
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </section>
   );
 }

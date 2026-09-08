@@ -28,15 +28,15 @@ export default function AlertBanner({ alert }: { alert: Alert }) {
           >
             {alert.severity}
           </span>
-          <p className="text-sm text-text">{alert.message}</p>
-          <p className="text-xs text-text-muted">{alert.recommendation}</p>
+          <p className="text-sm text-ink">{alert.message}</p>
+          <p className="text-xs text-muted">{alert.recommendation}</p>
         </div>
         <button
           onClick={() => {
             alertsService.acknowledge(alert.id);
             setDismissed(true);
           }}
-          className="shrink-0 text-xs font-medium text-text-muted transition-colors hover:text-text"
+          className="shrink-0 text-xs font-medium text-muted transition-colors hover:text-ink"
         >
           Dismiss
         </button>

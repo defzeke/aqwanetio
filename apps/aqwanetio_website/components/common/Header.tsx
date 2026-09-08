@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { UserCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import SettingsDropdown from "@/components/SettingsDropdown";
+import PondSearch from "@/components/PondSearch";
 import { useSettings } from "@/lib/settings-context";
 import { useTranslation } from "@/lib/translations";
 
@@ -13,106 +15,157 @@ const navLinks = [
   { href: "/docs", labelKey: "header.docs" },
 ];
 
+const switchClass = (on: boolean) =>
+  `relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${
+    on ? "bg-cyan" : "bg-line"
+  }`;
+
+const knobClass = (on: boolean) =>
+  `inline-block h-4 w-4 translate-y-0 rounded-full bg-white shadow transition-transform ${
+    on ? "translate-x-4" : "translate-x-0"
+  }`;
+
 export default function Header() {
   const { user, logout } = useAuth();
-  const { notifications, toggleNotifications, language, setLanguage } = useSettings();
+  const { notifications, toggleNotifications, theme, toggleTheme, language, setLanguage } =
+    useSettings();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const pathname = usePathname();
 
+  useEffect(() => {
+    if (!profileOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setProfileOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [profileOpen]);
+
   return (
-    <header className="relative z-50 flex h-16 shrink-0 items-center justify-between border-b border-gray-300 bg-white px-4 sm:px-6">
-      <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="h-8 w-8 overflow-hidden rounded">
-            <img src="/dostasti-logo.png" alt="DOST-ASTI" className="h-full w-full object-contain" />
-          </span>
-          <span className="h-8 w-8 overflow-hidden rounded">
-            <img src="/dost-logo.png" alt="DOST" className="h-full w-full object-contain" />
-          </span>
-          <div className="flex flex-col leading-tight">
-            <span className="text-xl font-bold text-navy">{t("header.brand")}</span>
-            <span className="text-sm font-medium text-gray-600 sm:text-base"></span>
-          </div>
-        </Link>
+    <div className="pointer-events-none fixed inset-x-0 top-3 z-[1003] flex flex-col items-center px-3 sm:px-6">
+      <header className="pointer-events-auto flex h-16 w-full max-w-[1240px] items-center justify-between gap-4 rounded-full border border-line bg-surface/85 px-4 shadow-[var(--shadow-raise)] backdrop-blur-xl sm:px-5">
+        <div className="flex min-w-0 items-center gap-5">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="neu-inset h-8 w-8 shrink-0 overflow-hidden rounded-lg p-1">
+              <img src="/dostasti-logo.png" alt="DOST-ASTI" className="h-full w-full object-contain" />
+            </span>
+            <span className="neu-inset hidden h-8 w-8 shrink-0 overflow-hidden rounded-lg p-1 sm:block">
+              <img src="/dost-logo.png" alt="DOST" className="h-full w-full object-contain" />
+            </span>
+            <span className="truncate text-xl font-bold text-ink">{t("header.brand")}</span>
+          </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`pb-[6px] text-sm font-medium transition-colors ${
-                  isActive
-                    ? "border-b-2 border-teal-dark font-bold text-navy"
-                    : "font-medium text-gray-600 hover:text-navy"
-                }`}
-              >
-                {t(link.labelKey)}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div className="hidden items-center gap-2 md:flex">
-        <SettingsDropdown />
-        {user ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">{user.name}</span>
-            <button
-              onClick={logout}
-              className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-            >
-              Sign Out
-            </button>
-          </div>
-        ) : (
-          <>
-            <Link
-              href="/auth/login"
-              className="rounded px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-gray-50"
-            >
-              {t("header.signIn")}
-            </Link>
-            <Link
-              href="/auth/register"
-              className="rounded bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-navy/90"
-            >
-              {t("header.register")}
-            </Link>
-          </>
-        )}
-      </div>
-
-      <button
-        type="button"
-        className="rounded p-2 text-gray-600 transition-colors hover:bg-gray-100 md:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label={mobileOpen ? "Close menu" : "Open menu"}
-        aria-expanded={mobileOpen}
-      >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          {mobileOpen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Main navigation"
+          >
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "border-cyan/25 bg-cyan/15 text-cyan"
+                      : "border-transparent text-muted hover:text-ink"
+                  }`}
+                >
+                  {t(link.labelKey)}
+                </Link>
+              );
+            })}
+          </nav>
+          {pathname === "/map" && (
+            <div className="hidden md:block">
+              <PondSearch />
+            </div>
           )}
-        </svg>
-      </button>
+        </div>
+
+        <div className="hidden items-center gap-2 md:flex">
+          <SettingsDropdown />
+          {user ? (
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-raised transition-colors hover:bg-raised/80"
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+                aria-label="Profile menu"
+              >
+                <UserCircle className="h-5 w-5 text-cyan" />
+              </button>
+              {profileOpen && (
+                <div className="neu-card absolute right-0 top-full z-50 mt-3 w-64 overflow-hidden p-1">
+                  <div className="px-3 py-2">
+                    <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+                    <p className="truncate text-xs text-muted">{user.email}</p>
+                  </div>
+                  <div className="my-1 h-px bg-line" />
+                  <Link
+                    href="/profile"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-raised"
+                  >
+                    <UserCircle className="h-4 w-4 text-muted" /> Profile Settings
+                  </Link>
+                  <div className="my-1 h-px bg-line" />
+                  <button
+                    onClick={() => { setProfileOpen(false); logout(); router.push("/"); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-alert hover:bg-alert/10"
+                  >
+                    <LogOut className="h-4 w-4" /> {t("header.signOut")}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link href="/auth/login" className="btn btn-ghost px-4 py-2 text-sm text-ink">
+                {t("header.signIn")}
+              </Link>
+              <Link href="/auth/register" className="btn btn-cyan px-4 py-2 text-sm">
+                {t("header.register")}
+              </Link>
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-ghost p-2 text-muted md:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            {mobileOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+      </header>
 
       {mobileOpen && (
-        <div className="absolute left-0 right-0 top-16 z-50 border-b border-gray-300 bg-white shadow-lg md:hidden">
-          <div className="space-y-1 px-4 py-3">
+        <div className="neu-card pointer-events-auto mt-2 w-full max-w-[1240px] p-4 md:hidden">
+          <div className="space-y-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive ? "bg-gray-100 font-bold text-navy" : "text-gray-600 hover:bg-gray-50"
+                  className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive ? "bg-cyan/15 font-bold text-cyan" : "text-muted hover:bg-raised"
                   }`}
                   onClick={() => setMobileOpen(false)}
                 >
@@ -120,26 +173,49 @@ export default function Header() {
                 </Link>
               );
             })}
-            <hr className="my-2 border-gray-300" />
+            <hr className="my-2 border-line" />
+            {pathname === "/map" && (
+              <div className="md:hidden">
+                <PondSearch />
+              </div>
+            )}
+            <hr className="my-2 border-line" />
             {user ? (
               <button
                 onClick={() => { logout(); setMobileOpen(false); }}
-                className="block w-full rounded px-3 py-2 text-left text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted hover:bg-raised"
               >
                 {t("header.signOut")} ({user.name})
               </button>
             ) : (
               <>
-                <Link href="/auth/login" className="block rounded px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50" onClick={() => setMobileOpen(false)}>{t("header.signIn")}</Link>
-                <Link href="/auth/register" className="block rounded px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50" onClick={() => setMobileOpen(false)}>{t("header.register")}</Link>
+                <Link href="/auth/login" className="block rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-raised" onClick={() => setMobileOpen(false)}>{t("header.signIn")}</Link>
+                <Link href="/auth/register" className="block rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-raised" onClick={() => setMobileOpen(false)}>{t("header.register")}</Link>
               </>
             )}
-            <hr className="my-2 border-gray-300" />
+            <hr className="my-2 border-line" />
             <div className="space-y-3 px-3 py-2">
-              <span className="text-xs font-bold uppercase tracking-wide text-gray-600">{t("settings.title")}</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-muted">{t("settings.title")}</span>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                  <svg className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <span className="flex items-center gap-2 text-sm font-medium text-ink">
+                  <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                  </svg>
+                  {t("settings.darkMode")}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={theme === "dark"}
+                  onClick={toggleTheme}
+                  className={switchClass(theme === "dark")}
+                >
+                  <span className={knobClass(theme === "dark")} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm font-medium text-ink">
+                  <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                   {t("settings.notifications")}
@@ -149,18 +225,14 @@ export default function Header() {
                   role="switch"
                   aria-checked={notifications}
                   onClick={toggleNotifications}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                    notifications ? "bg-navy" : "bg-gray-300"
-                  }`}
+                  className={switchClass(notifications)}
                 >
-                  <span className={`inline-block h-4 w-4 translate-y-0 rounded-full bg-white shadow-sm transition-transform ${
-                    notifications ? "translate-x-4" : "translate-x-0"
-                  }`} />
+                  <span className={knobClass(notifications)} />
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                  <svg className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <span className="flex items-center gap-2 text-sm font-medium text-ink">
+                  <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {t("settings.language")}
@@ -168,7 +240,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={() => setLanguage(language === "en" ? "fil" : "en")}
-                  className="rounded border border-gray-300 px-2 py-0.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100"
+                  className="btn btn-ghost px-2 py-0.5 text-sm font-semibold text-muted"
                 >
                   {language === "en" ? "EN" : "FIL"}
                 </button>
@@ -177,6 +249,6 @@ export default function Header() {
           </div>
         </div>
       )}
-    </header> 
+    </div>
   );
 }

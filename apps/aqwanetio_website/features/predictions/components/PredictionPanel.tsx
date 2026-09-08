@@ -6,9 +6,9 @@ export default function PredictionPanel({
   predictions: Prediction[];
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-lg border border-line shadow-[var(--shadow-raise-sm)]">
       <table className="w-full text-left text-sm">
-        <thead className="bg-background text-xs font-semibold text-text-muted">
+        <thead className="bg-raised text-xs font-semibold text-muted">
           <tr>
             <th className="px-4 py-3">Forecast</th>
             <th className="px-4 py-3">Predicted NH₃</th>
@@ -16,14 +16,14 @@ export default function PredictionPanel({
             <th className="px-4 py-3">Bias</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border text-text">
+        <tbody className="divide-y divide-line text-ink">
           {predictions.map((p, i) => (
-            <tr key={i} className="hover:bg-background/50">
-              <td className="px-4 py-2.5 text-text-muted">
+            <tr key={i} className="hover:bg-raised/60">
+              <td className="px-4 py-2.5 text-muted">
                 {new Date(p.timestamp).toLocaleTimeString()}
               </td>
               <td className="px-4 py-2.5 font-medium">{p.predictedAmmonia}</td>
-              <td className="px-4 py-2.5 text-text-muted">
+              <td className="px-4 py-2.5 text-muted">
                 {p.lowerBound} – {p.upperBound}
               </td>
               <td className="px-4 py-2.5">{p.biasCorrection}</td>
