@@ -9,6 +9,7 @@ export type User = {
   email: string;
   name: string;
   role: UserRole;
+  phone?: string;
 };
 
 type AuthContextType = {
@@ -39,7 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const profile = data.profile;
     const name = profile?.firstName ? `${profile.firstName} ${profile.lastName ?? ""}`.trim() : email.split("@")[0];
     const role = (profile?.role as UserRole) || "unverified";
-    setUser({ id: data.uid, email, name, role });
+    const phone = (profile?.phone as string) || undefined;
+    setUser({ id: data.uid, email, name, role, phone });
     if (data.idToken) sessionStorage.setItem("aqw-idToken", data.idToken);
     if (data.refreshToken) sessionStorage.setItem("aqw-refreshToken", data.refreshToken);
     localStorage.setItem("aqw-uid", data.uid);
@@ -75,7 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const email = p?.email || data.email;
         const name = p?.firstName ? `${p.firstName} ${p.lastName ?? ""}`.trim() : email.split("@")[0];
         const role = (p?.role as UserRole) || "unverified";
-        setUser({ id: data.uid || p?.uid, email, name, role });
+        const phone = (p?.phone as string) || undefined;
+        setUser({ id: data.uid || p?.uid, email, name, role, phone });
       })
       .catch(() => {
         localStorage.removeItem("aqw-idToken");

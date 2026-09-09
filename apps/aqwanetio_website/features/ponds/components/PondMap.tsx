@@ -19,6 +19,8 @@ import { useSettings } from "@/lib/settings-context";
 import { useMapStyles } from "@/lib/map-styles";
 import MapStyleSwitcher from "./MapStyleSwitcher";
 import { fetchStations, type Station } from "@/features/stations/services/stations.service";
+import { useAuth } from "@/lib/auth-context";
+import ClaimPondModal from "./ClaimPondModal";
 
 const statusDot: Record<PondStatus, string> = {
   safe: "bg-safe",
@@ -66,8 +68,11 @@ export default function PondMap({
   const overlayRef = useRef<HTMLDivElement>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [stations, setStations] = useState<Station[]>([]);
+  const [claimStation, setClaimStation] = useState<Station | null>(null);
+  const [claimMock, setClaimMock] = useState(() => pondsService.getAll()[0]);
   const { theme, mapStyle, setMapStyle } = useSettings();
   const { t } = useTranslation();
+  const { user, loading } = useAuth();
   const { active: styles, ready } = useMapStyles(mapStyle);
 
   const ponds = pondsService.getAll();
@@ -181,6 +186,18 @@ export default function PondMap({
                   >
                     {t("mapPopup.viewDetails")}
                   </button>
+                  {user && !loading && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setClaimMock(mock);
+                        setClaimStation(station);
+                      }}
+                      className="btn btn-cyan w-full rounded-lg px-3 py-1.5 text-xs font-bold"
+                    >
+                      {t("mapPopup.claimPond")}
+                    </button>
+                  )}
                 </div>
               </MarkerPopup>
             </MapMarker>
@@ -211,6 +228,9 @@ export default function PondMap({
         style={{ backgroundColor: "rgba(0,0,0,0)", opacity: 0 }}
       />
       <MapStyleSwitcher current={mapStyle} onChange={setMapStyle} />
+      {claimStation && (
+        <ClaimPondModal station={claimStation} mock={claimMock} onClose={() => setClaimStation(null)} />
+      )}
     </div>
   );
 }

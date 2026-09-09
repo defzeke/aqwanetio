@@ -43,6 +43,19 @@ const dict = {
     },
     mapPopup: {
       viewDetails: "View Details",
+      claimPond: "Claim Pond",
+      claimPondDesc: "Submit ownership proof for {location}",
+    },
+    claim: {
+      driveGuideTitle: "How to paste Drive link",
+      driveGuideStep1: "Upload your proof (ID, deed, barangay cert, etc.) to Google Drive.",
+      driveGuideStep2: "Right-click file → Share → General access → Anyone with the link → Viewer.",
+      driveGuideStep3: "Click Copy link.",
+      driveGuideStep4: "Paste the link below (must start with https://drive.google.com/...).",
+      documentUrl: "Document URL",
+      cancel: "Cancel",
+      submit: "Submit Claim",
+      submitted: "Claim submitted – pending review",
     },
     mapStyles: {
       label: "Map style",
@@ -189,6 +202,19 @@ const dict = {
     },
     mapPopup: {
       viewDetails: "Tingnan ang Detalye",
+      claimPond: "I-claim ang Pond",
+      claimPondDesc: "Magsumite ng patunay para sa {location}",
+    },
+    claim: {
+      driveGuideTitle: "Paano i-paste ang Drive link",
+      driveGuideStep1: "I-upload ang patunay (ID, titulo, barangay cert) sa Google Drive.",
+      driveGuideStep2: "I-right-click ang file → Share → General access → Anyone with the link → Viewer.",
+      driveGuideStep3: "I-click ang Copy link.",
+      driveGuideStep4: "I-paste ang link sa ibaba (dapat magsimula sa https://drive.google.com/...).",
+      documentUrl: "Document URL",
+      cancel: "Kanselahin",
+      submit: "Isumite ang Claim",
+      submitted: "Naisumite ang claim – naghihintay ng pagsusuri",
     },
     mapStyles: {
       label: "Estilo ng mapa",
