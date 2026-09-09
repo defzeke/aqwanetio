@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { pondsService } from "../services";
 import { readingsService } from "@/features/readings/services";
 import { predictionsService } from "@/features/predictions/services";
-import PondChart from "./PondChart";
+import PondChart, { type ChartMetric } from "./PondChart";
+import StationComparisonBar from "./StationComparisonBar";
+import PondHealthRadar from "./PondHealthRadar";
 import { useTranslation } from "@/lib/translations";
 
 const DAY_MS = 86_400_000;
@@ -29,6 +31,8 @@ export default function PondDetailModal({
   const [view, setView] = useState<"live" | "history">("live");
   const [nowMs] = useState(() => Date.now());
   const [endTime, setEndTime] = useState(() => toDateTimeLocal(nowMs - DAY_MS));
+  const [metric, setMetric] = useState<ChartMetric>("ammonia");
+  const [barMetric, setBarMetric] = useState<ChartMetric>("209");
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -75,7 +79,7 @@ export default function PondDetailModal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[1005] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose();
       }}
@@ -108,7 +112,7 @@ export default function PondDetailModal({
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div
                 role="group"
-                aria-label="Data view"
+                aria-label={t("modal.dataView")}
                 className="flex rounded-full border border-line bg-surface p-1 shadow-[var(--shadow-raise-sm)]"
               >
                 <button
@@ -142,7 +146,44 @@ export default function PondDetailModal({
               )}
             </div>
 
-            <PondChart readings={readings} predictions={predictions} />
+            {/* Metric selector */}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <label className="text-sm font-medium text-muted" htmlFor="metric-select">{t("modal.metricLabel")}</label>
+              <select
+                id="metric-select"
+                value={metric}
+                onChange={(e) => setMetric(e.target.value as ChartMetric)}
+                className="neu-input h-9 rounded-xl px-3 text-sm"
+              >
+                <option value="ammonia">{t("modal.ammonia")}</option>
+                <option value="210">{t("metrics.p210")} ({t("metrics.unit210")})</option>
+                <option value="218">{t("metrics.p218")} ({t("metrics.unit218")})</option>
+                <option value="176">{t("metrics.p176")} ({t("metrics.unit176")})</option>
+                <option value="177">{t("metrics.p177")} ({t("metrics.unit177")})</option>
+                <option value="209">{t("metrics.p209")} ({t("metrics.unit209")})</option>
+                <option value="217">{t("metrics.p217")} ({t("metrics.unit217")})</option>
+                <option value="170">{t("metrics.p170")} ({t("metrics.unit170")})</option>
+                <option value="173">{t("metrics.p173")} ({t("metrics.unit173")})</option>
+              </select>
+            </div>
+
+            <h4 className="mb-2 text-sm font-semibold text-ink">{t("charts.lineTitle")}</h4>
+            <PondChart readings={readings} predictions={metric === "ammonia" ? predictions : undefined} metric={metric} />
+
+            <div className="mt-6 mb-3 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-ink">{t("charts.barTitle")}</h4>
+              <select value={barMetric} onChange={(e) => setBarMetric(e.target.value as ChartMetric)} className="neu-input h-8 rounded-lg px-2 text-xs">
+                <option value="209">{t("metrics.p209")}</option>
+                <option value="210">{t("metrics.p210")}</option>
+                <option value="176">{t("metrics.p176")}</option>
+                <option value="170">{t("metrics.p170")}</option>
+              </select>
+            </div>
+            <StationComparisonBar metric={barMetric} />
+
+            <div className="mt-6">
+              <PondHealthRadar pondId={pondId} />
+            </div>
           </div>
 
           <div className="flex justify-end border-t border-line px-6 py-4">
