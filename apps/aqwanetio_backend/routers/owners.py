@@ -32,21 +32,12 @@ def _validate_doc_url(url: str) -> str:
     return url
 
 
-CLAIM_SELECT = (
-    "SELECT owner_id, user_id, first_name, last_name, email, phone_number, "
-    "document_url, status, created_at FROM tbl_owner"
-)
-
 CLAIM_SELECT_JOIN = (
-    "SELECT o.owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, "
-    "o.document_url, o.status, o.created_at, "
-    "COALESCE(s_req.station_id, s_own.station_id) AS station_id, "
-    "COALESCE(s_req.location, s_own.location) AS station_location, "
-    "COALESCE(s_req.municipality, s_own.municipality) AS station_municipality, "
-    "COALESCE(s_req.province, s_own.province) AS station_province "
-    "FROM tbl_owner o "
-    "LEFT JOIN tbl_station s_req ON s_req.station_id = o.requested_station_id "
-    "LEFT JOIN LATERAL (SELECT station_id, location, municipality, province FROM tbl_station WHERE owner_id = o.user_id LIMIT 1) s_own ON o.status='approved'"
+    "SELECT c.claim_id AS owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, "
+    "c.document_url, c.status, c.created_at, "
+    "s.station_id, s.location AS station_location, s.municipality AS station_municipality, s.province AS station_province "
+    "FROM tbl_claim c JOIN tbl_owner o ON o.user_id = c.user_id "
+    "JOIN tbl_station s ON s.station_id = c.station_id"
 )
 
 
@@ -62,44 +53,43 @@ def _row_to_owner(row, cols):
 
 
 def _fetch_claims(cur, status_filter: Optional[str]):
+    # ponytail: 1 owner profile + N claims in tbl_claim, N ponds in tbl_station.owner_id
     try:
         if status_filter:
-            cur.execute(f"{CLAIM_SELECT_JOIN} WHERE o.status = %s ORDER BY o.created_at DESC", (status_filter,))
+            cur.execute(f"{CLAIM_SELECT_JOIN} WHERE c.status = %s ORDER BY c.created_at DESC", (status_filter,))
         else:
-            cur.execute(f"{CLAIM_SELECT_JOIN} ORDER BY o.created_at DESC")
+            cur.execute(f"{CLAIM_SELECT_JOIN} ORDER BY c.created_at DESC")
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description] if cur.description else []
         return [_row_to_owner(r, cols) for r in rows]
-    except psycopg.errors.UndefinedColumn:
+    except psycopg.errors.UndefinedTable:
         cur.connection.rollback()
-        # fallback: try old station_id column or plain
+        # fallback to old tbl_owner-as-claims (pre-migration)
+        legacy = (
+            "SELECT o.owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, "
+            "o.document_url, o.status, o.created_at, "
+            "COALESCE(s_req.station_id, s_own.station_id) AS station_id, "
+            "COALESCE(s_req.location, s_own.location) AS station_location, "
+            "COALESCE(s_req.municipality, s_own.municipality) AS station_municipality, "
+            "COALESCE(s_req.province, s_own.province) AS station_province "
+            "FROM tbl_owner o "
+            "LEFT JOIN tbl_station s_req ON s_req.station_id = o.requested_station_id "
+            "LEFT JOIN LATERAL (SELECT station_id, location, municipality, province FROM tbl_station WHERE owner_id = o.user_id LIMIT 1) s_own ON o.status='approved'"
+        )
         try:
-            alt = CLAIM_SELECT_JOIN.replace("o.requested_station_id", "o.station_id")
             if status_filter:
-                cur.execute(f"{alt} WHERE o.status = %s ORDER BY o.created_at DESC", (status_filter,))
+                cur.execute(f"{legacy} WHERE o.status = %s ORDER BY o.created_at DESC", (status_filter,))
             else:
-                cur.execute(f"{alt} ORDER BY o.created_at DESC")
+                cur.execute(f"{legacy} ORDER BY o.created_at DESC")
             rows = cur.fetchall()
             cols = [d[0] for d in cur.description] if cur.description else []
             return [_row_to_owner(r, cols) for r in rows]
         except Exception:
             cur.connection.rollback()
-            if status_filter:
-                cur.execute(f"{CLAIM_SELECT} WHERE status = %s ORDER BY created_at DESC", (status_filter,))
-            else:
-                cur.execute(f"{CLAIM_SELECT} ORDER BY created_at DESC")
+            cur.execute("SELECT owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at FROM tbl_owner ORDER BY created_at DESC" if not status_filter else "SELECT owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at FROM tbl_owner WHERE status=%s ORDER BY created_at DESC", (status_filter,) if status_filter else None)
             rows = cur.fetchall()
             cols = [d[0] for d in cur.description] if cur.description else []
             return [_row_to_owner(r, cols) for r in rows]
-    except psycopg.errors.UndefinedTable:
-        cur.connection.rollback()
-        if status_filter:
-            cur.execute(f"{CLAIM_SELECT} WHERE status = %s ORDER BY created_at DESC", (status_filter,))
-        else:
-            cur.execute(f"{CLAIM_SELECT} ORDER BY created_at DESC")
-        rows = cur.fetchall()
-        cols = [d[0] for d in cur.description] if cur.description else []
-        return [_row_to_owner(r, cols) for r in rows]
 
 
 @router.post("/owners/claims")
@@ -115,123 +105,125 @@ def submit_owner_claim(payload: OwnerClaimPayload, decoded=Depends(get_token)):
         raise HTTPException(status_code=400, detail="Email mismatch with token")
 
     station_id = payload.station_id
+    if station_id is None:
+        raise HTTPException(status_code=400, detail="station_id is required – claim a pond by tapping its pin")
 
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
-                if station_id is not None:
-                    try:
-                        cur.execute("SELECT 1 FROM tbl_station WHERE station_id = %s", (station_id,))
-                        if not cur.fetchone():
-                            raise HTTPException(status_code=404, detail="Station not found")
-                        # ponytail: allow same user to claim multiple ponds – only block duplicate pending same pond or already owned
-                        cur.execute(
-                            "SELECT 1 FROM tbl_owner WHERE user_id = %s AND requested_station_id = %s AND status = 'pending'",
-                            (uid, station_id),
-                        )
-                        if cur.fetchone():
-                            raise HTTPException(status_code=409, detail="Already claimed this pond – pending review")
-                        cur.execute("SELECT owner_id FROM tbl_station WHERE station_id = %s", (station_id,))
-                        s_own = cur.fetchone()
-                        if s_own and s_own[0] == uid:
-                            raise HTTPException(status_code=409, detail="You already own this pond")
-                    except psycopg.errors.UndefinedTable:
-                        pass
-                    except HTTPException:
-                        raise
-                    except psycopg.errors.UndefinedColumn:
-                        cur.connection.rollback()
+                cur.execute("SELECT 1 FROM tbl_station WHERE station_id = %s", (station_id,))
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail="Station not found")
+                cur.execute("SELECT owner_id FROM tbl_station WHERE station_id = %s", (station_id,))
+                s_own = cur.fetchone()
+                if s_own and s_own[0] == uid:
+                    raise HTTPException(status_code=409, detail="You already own this pond")
 
-                # ponytail: one row per claim – no ON CONFLICT, same user can claim N ponds
+                # upsert profile – one row per user_id
+                cur.execute(
+                    """
+                    INSERT INTO tbl_owner (user_id, first_name, last_name, email, phone_number, document_url, status)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'pending')
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        first_name = EXCLUDED.first_name,
+                        last_name = EXCLUDED.last_name,
+                        email = EXCLUDED.email,
+                        phone_number = EXCLUDED.phone_number,
+                        document_url = EXCLUDED.document_url
+                    RETURNING owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at
+                    """,
+                    (uid, payload.first_name.strip()[:50], payload.last_name.strip()[:50], email_trim, payload.phone_number.strip(), doc_url),
+                )
+                # ensure profile exists before claim (for FK)
+                conn.commit()
+
                 try:
+                    cur.execute(
+                        """
+                        INSERT INTO tbl_claim (user_id, station_id, status, document_url)
+                        VALUES (%s, %s, 'pending', %s)
+                        RETURNING claim_id, user_id, station_id, status, document_url, created_at
+                        """,
+                        (uid, station_id, doc_url),
+                    )
+                    row = cur.fetchone()
+                    cols = [d[0] for d in cur.description] if cur.description else []
+                    claim = dict(zip(cols, row))
+                    conn.commit()
+                except psycopg.errors.UniqueViolation:
+                    conn.rollback()
+                    raise HTTPException(status_code=409, detail="Already claimed this pond – pending review")
+                except psycopg.errors.UndefinedTable:
+                    conn.rollback()
+                    # fallback to old single-table mode (requested_station_id)
                     cur.execute(
                         """
                         INSERT INTO tbl_owner (user_id, first_name, last_name, email, phone_number, document_url, status, requested_station_id)
                         VALUES (%s, %s, %s, %s, %s, %s, 'pending', %s)
                         RETURNING owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at, requested_station_id
                         """,
-                        (
-                            uid,
-                            payload.first_name.strip()[:50],
-                            payload.last_name.strip()[:50],
-                            email_trim,
-                            payload.phone_number.strip(),
-                            doc_url,
-                            station_id,
-                        ),
+                        (uid, payload.first_name.strip()[:50], payload.last_name.strip()[:50], email_trim, payload.phone_number.strip(), doc_url, station_id),
                     )
                     row = cur.fetchone()
                     cols = [d[0] for d in cur.description] if cur.description else []
                     conn.commit()
-                    owner = _row_to_owner(row, cols)
-                    if owner.get("requested_station_id") is not None:
-                        owner["station_id"] = owner.pop("requested_station_id")
-                    if station_id is not None:
-                        try:
-                            with conn.cursor() as cur2:
-                                cur2.execute("SELECT location, municipality, province FROM tbl_station WHERE station_id = %s", (station_id,))
-                                srow = cur2.fetchone()
-                                if srow:
-                                    owner["station_location"] = srow[0]
-                                    owner["station_municipality"] = srow[1]
-                                    owner["station_province"] = srow[2]
-                        except Exception:
-                            pass
-                    return {"ok": True, "owner": owner}
-                except psycopg.errors.UniqueViolation as e:
-                    conn.rollback()
-                    raise HTTPException(status_code=409, detail="Already claimed this pond – pending review")
-                except psycopg.errors.UndefinedColumn:
-                    conn.rollback()
-                    # fallback for DB without requested_station_id (should not happen after migration)
-                    cur.execute(
-                        """
-                        INSERT INTO tbl_owner (user_id, first_name, last_name, email, phone_number, document_url, status)
-                        VALUES (%s, %s, %s, %s, %s, %s, 'pending')
-                        RETURNING owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at
-                        """,
-                        (uid, payload.first_name.strip()[:50], payload.last_name.strip()[:50], email_trim, payload.phone_number.strip(), doc_url),
-                    )
-                    row = cur.fetchone()
-                    cols = [d[0] for d in cur.description] if cur.description else []
-                    conn.commit()
-                    owner = _row_to_owner(row, cols)
-                    if station_id is not None:
-                        owner["station_id"] = station_id
-                    return {"ok": True, "owner": owner}
+                    claim = _row_to_owner(row, cols)
+                    if claim.get("requested_station_id") is not None:
+                        claim["station_id"] = claim.pop("requested_station_id")
+                    return {"ok": True, "owner": claim}
+
+                # enrich with station + profile for response
+                cur.execute("SELECT first_name, last_name, email, phone_number FROM tbl_owner WHERE user_id = %s", (uid,))
+                prof = cur.fetchone()
+                cur.execute("SELECT location, municipality, province FROM tbl_station WHERE station_id = %s", (station_id,))
+                srow = cur.fetchone()
+                return {
+                    "ok": True,
+                    "owner": {
+                        "owner_id": claim["claim_id"],
+                        "user_id": uid,
+                        "first_name": prof[0] if prof else payload.first_name,
+                        "last_name": prof[1] if prof else payload.last_name,
+                        "email": email_trim,
+                        "phone_number": payload.phone_number,
+                        "document_url": doc_url,
+                        "status": "pending",
+                        "created_at": claim["created_at"].isoformat() if hasattr(claim["created_at"], "isoformat") else str(claim["created_at"]),
+                        "station_id": station_id,
+                        "station_location": srow[0] if srow else None,
+                        "station_municipality": srow[1] if srow else None,
+                        "station_province": srow[2] if srow else None,
+                    },
+                }
     except HTTPException:
         raise
-    except psycopg.errors.UndefinedTable:
-        raise HTTPException(status_code=500, detail="tbl_owner table not found in Neon. Run migration.")
+    except psycopg.errors.UndefinedTable as e:
+        raise HTTPException(status_code=500, detail=f"tbl_claim/tbl_owner table not found. Run migration: {e}")
     except psycopg.Error as e:
         raise HTTPException(status_code=500, detail=f"DB error: {e}")
 
 
 class OwnerReviewPayload(BaseModel):
     action: constr(strip_whitespace=True, min_length=1, max_length=20)  # type: ignore
-    # ponytail: ignored – admin cannot pick station, fixed to requested_station_id
     station_id: Optional[int] = None
 
 
 @router.get("/owners/claims")
 def list_owner_claims(status: Optional[str] = None):
-    # ponytail: open like /stations — admin app has no login flow yet; lock down once admin auth lands
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
                 sf = status.strip().lower() if status and status.strip().lower() in ("pending", "approved", "rejected") else None
                 claims = _fetch_claims(cur, sf)
                 return {"ok": True, "claims": claims}
-    except psycopg.errors.UndefinedTable:
-        raise HTTPException(status_code=500, detail="tbl_owner table not found in Neon. Run migration.")
     except psycopg.Error as e:
         raise HTTPException(status_code=500, detail=f"DB error: {e}")
 
 
 @router.patch("/owners/claims/{owner_id}")
 def review_owner_claim(owner_id: int, payload: OwnerReviewPayload):
+    # owner_id is claim_id in new model (aliased as owner_id for frontend compat)
     action = payload.action.strip().lower()
-    # ponytail: admin cannot pick station – fixed to what user requested
     if payload.station_id is not None:
         raise HTTPException(status_code=400, detail="station_id cannot be set by admin – claim is fixed to requested pin")
     if action in ("approve", "approved"):
@@ -243,109 +235,103 @@ def review_owner_claim(owner_id: int, payload: OwnerReviewPayload):
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
+                # try new tbl_claim first
                 try:
-                    cur.execute("SELECT user_id, requested_station_id FROM tbl_owner WHERE owner_id = %s", (owner_id,))
-                    owner_row = cur.fetchone()
-                    if not owner_row:
-                        raise HTTPException(status_code=404, detail="Owner claim not found")
-                    user_id, station_id = owner_row[0], owner_row[1] if len(owner_row) > 1 else None
-                except psycopg.errors.UndefinedColumn:
-                    cur.connection.rollback()
-                    cur.execute("SELECT user_id, station_id FROM tbl_owner WHERE owner_id = %s", (owner_id,))
-                    r = cur.fetchone()
-                    if not r:
-                        raise HTTPException(status_code=404, detail="Owner claim not found")
-                    user_id, station_id = r[0], r[1] if len(r) > 1 else None
-                except psycopg.errors.UndefinedTable:
-                    raise
-                if action in ("approve", "approved") and station_id is None:
-                    raise HTTPException(status_code=400, detail="claim has no requested station – cannot approve")
-
-                cur.execute(
-                    "UPDATE tbl_owner SET status = %s WHERE owner_id = %s "
-                    "RETURNING owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at",
-                    (new_status, owner_id),
-                )
-                updated = cur.fetchone()
-                ucols = [d[0] for d in cur.description] if cur.description else []
-
-                if new_status == "approved":
-                    try:
+                    cur.execute("SELECT user_id, station_id, status FROM tbl_claim WHERE claim_id = %s", (owner_id,))
+                    row = cur.fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail="Claim not found")
+                    user_id, station_id, cur_status = row
+                    if cur_status != "pending":
+                        raise HTTPException(status_code=400, detail=f"Claim already {cur_status}")
+                    cur.execute("UPDATE tbl_claim SET status = %s WHERE claim_id = %s RETURNING claim_id, user_id, station_id, status, document_url, created_at", (new_status, owner_id))
+                    updated = cur.fetchone()
+                    if new_status == "approved":
                         cur.execute("SELECT owner_id FROM tbl_station WHERE station_id = %s", (station_id,))
                         srow = cur.fetchone()
                         if not srow:
                             raise HTTPException(status_code=404, detail="Station not found")
                         cur.execute("UPDATE tbl_station SET owner_id = %s WHERE station_id = %s", (user_id, station_id))
-                        # clear requested pin after grant
-                        try:
-                            cur.execute("UPDATE tbl_owner SET requested_station_id = NULL WHERE owner_id = %s", (owner_id,))
-                        except psycopg.errors.UndefinedColumn:
-                            cur.connection.rollback()
-                            # keep transaction – re-apply station link after rollback
-                            cur.execute("UPDATE tbl_station SET owner_id = %s WHERE station_id = %s", (user_id, station_id))
-                    except psycopg.errors.UndefinedColumn:
-                        raise HTTPException(status_code=500, detail="tbl_station.owner_id column not found. Run migration.")
-                    except psycopg.errors.UndefinedTable:
-                        raise HTTPException(status_code=500, detail="tbl_station table not found in Neon. Run migration.")
-
-                conn.commit()
-                owner = _row_to_owner(updated, ucols)
-                if station_id is not None:
+                        cur.execute("UPDATE tbl_owner SET status = 'approved' WHERE user_id = %s", (user_id,))
+                    else:
+                        cur.execute("UPDATE tbl_claim SET status = 'rejected' WHERE claim_id = %s", (owner_id,))
+                    conn.commit()
+                    # enrich response like list
+                    cur.execute("SELECT first_name, last_name, email, phone_number FROM tbl_owner WHERE user_id = %s", (user_id,))
+                    prof = cur.fetchone()
+                    cur.execute("SELECT location, municipality, province FROM tbl_station WHERE station_id = %s", (station_id,))
+                    srow = cur.fetchone()
+                    return {
+                        "ok": True,
+                        "owner": {
+                            "owner_id": owner_id,
+                            "user_id": user_id,
+                            "first_name": prof[0] if prof else "",
+                            "last_name": prof[1] if prof else "",
+                            "email": prof[2] if prof else "",
+                            "phone_number": prof[3] if prof else "",
+                            "document_url": updated[4] if updated else "",
+                            "status": new_status,
+                            "created_at": updated[5].isoformat() if hasattr(updated[5], "isoformat") else str(updated[5]) if updated else "",
+                            "station_id": station_id,
+                            "station_location": srow[0] if srow else None,
+                            "station_municipality": srow[1] if srow else None,
+                            "station_province": srow[2] if srow else None,
+                        },
+                    }
+                except psycopg.errors.UndefinedTable:
+                    cur.connection.rollback()
+                    # fallback to old tbl_owner-as-claim
+                    cur.execute("SELECT user_id, requested_station_id FROM tbl_owner WHERE owner_id = %s", (owner_id,))
+                    row = cur.fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail="Owner claim not found")
+                    user_id, station_id = row
+                    if new_status == "approved" and station_id is None:
+                        raise HTTPException(status_code=400, detail="claim has no requested station")
+                    cur.execute("UPDATE tbl_owner SET status = %s WHERE owner_id = %s RETURNING owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at", (new_status, owner_id))
+                    updated = cur.fetchone()
+                    ucols = [d[0] for d in cur.description] if cur.description else []
+                    if new_status == "approved":
+                        cur.execute("UPDATE tbl_station SET owner_id = %s WHERE station_id = %s", (user_id, station_id))
+                    conn.commit()
+                    owner = dict(zip(ucols, updated)) if updated else {}
                     owner["station_id"] = station_id
-                    try:
-                        with conn.cursor() as cur2:
-                            cur2.execute("SELECT location, municipality, province FROM tbl_station WHERE station_id = %s", (station_id,))
-                            srow = cur2.fetchone()
-                            if srow:
-                                owner["station_location"] = srow[0]
-                                owner["station_municipality"] = srow[1]
-                                owner["station_province"] = srow[2]
-                    except Exception:
-                        pass
-                else:
-                    try:
-                        with conn.cursor() as cur2:
-                            cur2.execute("SELECT station_id, location, municipality, province FROM tbl_station WHERE owner_id = %s LIMIT 1", (user_id,))
-                            srow = cur2.fetchone()
-                            if srow:
-                                owner["station_id"] = srow[0]
-                                owner["station_location"] = srow[1]
-                                owner["station_municipality"] = srow[2]
-                                owner["station_province"] = srow[3]
-                    except Exception:
-                        pass
-                return {"ok": True, "owner": owner}
+                    return {"ok": True, "owner": owner}
     except HTTPException:
         raise
-    except psycopg.errors.UndefinedTable:
-        raise HTTPException(status_code=500, detail="tbl_owner table not found in Neon. Run migration.")
     except psycopg.Error as e:
         raise HTTPException(status_code=500, detail=f"DB error: {e}")
 
 
 @router.delete("/owners/claims/{owner_id}")
 def delete_owner_claim(owner_id: int):
-    # ponytail: hard delete – always clears Neon, never localStorage
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT user_id, requested_station_id, status FROM tbl_owner WHERE owner_id = %s", (owner_id,))
-                row = cur.fetchone()
-                if not row:
-                    raise HTTPException(status_code=404, detail="Owner claim not found")
-                user_id, req_sid, status = row[0], row[1] if len(row) > 1 else None, row[2] if len(row) > 2 else None
-                # if approved, free the pond in Neon
-                if status == "approved":
-                    # find owned station for this user (the granted one)
-                    cur.execute("SELECT station_id FROM tbl_station WHERE owner_id = %s LIMIT 1", (user_id,))
-                    srow = cur.fetchone()
-                    if srow:
-                        cur.execute("UPDATE tbl_station SET owner_id = NULL WHERE station_id = %s", (srow[0],))
-                    elif req_sid is not None:
-                        cur.execute("UPDATE tbl_station SET owner_id = NULL WHERE station_id = %s AND owner_id = %s", (req_sid, user_id))
-                cur.execute("DELETE FROM tbl_owner WHERE owner_id = %s", (owner_id,))
-                conn.commit()
-                return {"ok": True}
+                try:
+                    cur.execute("SELECT user_id, station_id, status FROM tbl_claim WHERE claim_id = %s", (owner_id,))
+                    row = cur.fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail="Claim not found")
+                    user_id, station_id, status = row
+                    if status == "approved":
+                        cur.execute("UPDATE tbl_station SET owner_id = NULL WHERE station_id = %s AND owner_id = %s", (station_id, user_id))
+                    cur.execute("DELETE FROM tbl_claim WHERE claim_id = %s", (owner_id,))
+                    conn.commit()
+                    return {"ok": True}
+                except psycopg.errors.UndefinedTable:
+                    cur.connection.rollback()
+                    cur.execute("SELECT user_id, requested_station_id, status FROM tbl_owner WHERE owner_id = %s", (owner_id,))
+                    row = cur.fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail="Owner claim not found")
+                    user_id, req_sid, status = row
+                    if status == "approved" and req_sid is not None:
+                        cur.execute("UPDATE tbl_station SET owner_id = NULL WHERE station_id = %s", (req_sid,))
+                    cur.execute("DELETE FROM tbl_owner WHERE owner_id = %s", (owner_id,))
+                    conn.commit()
+                    return {"ok": True}
     except HTTPException:
         raise
     except psycopg.Error as e:
@@ -362,13 +348,10 @@ def get_my_owner_claim(decoded=Depends(get_token)):
             with conn.cursor() as cur:
                 try:
                     cur.execute(
-                        "SELECT o.owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, o.document_url, o.status, o.created_at, "
-                        "COALESCE(s_req.station_id, s_own.station_id) AS station_id, "
-                        "COALESCE(s_req.location, s_own.location) AS station_location, "
-                        "COALESCE(s_req.municipality, s_own.municipality) AS station_municipality FROM tbl_owner o "
-                        "LEFT JOIN tbl_station s_req ON s_req.station_id = o.requested_station_id "
-                        "LEFT JOIN LATERAL (SELECT station_id, location, municipality FROM tbl_station WHERE owner_id = o.user_id LIMIT 1) s_own ON o.status='approved' "
-                        "WHERE o.user_id = %s ORDER BY o.created_at DESC LIMIT 1",
+                        "SELECT c.claim_id AS owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, c.document_url, c.status, c.created_at, "
+                        "s.station_id, s.location AS station_location, s.municipality AS station_municipality "
+                        "FROM tbl_claim c JOIN tbl_owner o ON o.user_id = c.user_id JOIN tbl_station s ON s.station_id = c.station_id "
+                        "WHERE c.user_id = %s ORDER BY c.created_at DESC LIMIT 1",
                         (uid,),
                     )
                     row = cur.fetchone()
@@ -376,36 +359,15 @@ def get_my_owner_claim(decoded=Depends(get_token)):
                         raise HTTPException(status_code=404, detail="No owner claim found")
                     cols = [d[0] for d in cur.description] if cur.description else []
                     return {"ok": True, "owner": _row_to_owner(row, cols)}
-                except psycopg.errors.UndefinedColumn:
+                except psycopg.errors.UndefinedTable:
                     cur.connection.rollback()
-                    # fallback to old join
-                    try:
-                        cur.execute(
-                            "SELECT o.owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, o.document_url, o.status, o.created_at, "
-                            "s.station_id, s.location AS station_location, s.municipality AS station_municipality FROM tbl_owner o "
-                            "LEFT JOIN LATERAL (SELECT station_id, location, municipality FROM tbl_station WHERE owner_id = o.user_id LIMIT 1) s ON true "
-                            "WHERE o.user_id = %s",
-                            (uid,),
-                        )
-                        row = cur.fetchone()
-                        if not row:
-                            raise HTTPException(status_code=404, detail="No owner claim found")
-                        cols = [d[0] for d in cur.description] if cur.description else []
-                        return {"ok": True, "owner": _row_to_owner(row, cols)}
-                    except Exception:
-                        cur.connection.rollback()
-                        cur.execute(
-                            "SELECT owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at FROM tbl_owner WHERE user_id = %s",
-                            (uid,),
-                        )
-                        row = cur.fetchone()
-                        if not row:
-                            raise HTTPException(status_code=404, detail="No owner claim found")
-                        cols = [d[0] for d in cur.description] if cur.description else []
-                        return {"ok": True, "owner": _row_to_owner(row, cols)}
+                    cur.execute("SELECT owner_id, user_id, first_name, last_name, email, phone_number, document_url, status, created_at FROM tbl_owner WHERE user_id = %s ORDER BY created_at DESC LIMIT 1", (uid,))
+                    row = cur.fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail="No owner claim found")
+                    cols = [d[0] for d in cur.description] if cur.description else []
+                    return {"ok": True, "owner": _row_to_owner(row, cols)}
     except HTTPException:
         raise
-    except psycopg.errors.UndefinedTable:
-        raise HTTPException(status_code=500, detail="tbl_owner table not found in Neon. Run migration.")
     except psycopg.Error as e:
         raise HTTPException(status_code=500, detail=f"DB error: {e}")
