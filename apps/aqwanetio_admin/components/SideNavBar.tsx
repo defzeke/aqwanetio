@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SideNavLink from "./SideNavLink";
 import PondSelector from "./PondSelector";
@@ -56,15 +57,17 @@ export default function SideNavBar({ open, onClose, onAddClick }: { open: boolea
             <AddIcon />
             ADD NEW POND
           </button>
-          {/* ponytail: disabled placeholder, enable + Link to /ownership-claims when feature lands */}
-          <button
-            disabled
-            aria-disabled="true"
-            title="Coming soon — ownership claims review"
-            className="flex gap-2 items-center justify-center bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px] opacity-50 cursor-not-allowed"
+          {/* ponytail: ownership claims review */}
+          <Link
+            href="/ownership-claims"
+            className={`flex gap-2 items-center justify-center text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px] hover:opacity-90 ${
+              pathname === "/ownership-claims" || pathname.startsWith("/ownership-claims/")
+                ? "bg-admin-nav-active text-white"
+                : "bg-admin-text text-white"
+            }`}
           >
             REVIEW OWNERSHIP CLAIMS
-          </button>
+          </Link>
         </div>
       </div>
       <nav className="flex flex-col gap-1 w-full px-4">

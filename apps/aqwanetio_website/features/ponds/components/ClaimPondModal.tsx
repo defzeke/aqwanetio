@@ -26,6 +26,8 @@ export default function ClaimPondModal({
   const [documentUrl, setDocumentUrl] = useState("");
   const [touched, setTouched] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -70,24 +72,47 @@ export default function ClaimPondModal({
     phoneValid &&
     isDocValid;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (!isValid) return;
-    const payload = {
-      stationId: station.stationId,
-      stationLocation: station.location,
-      first_name: firstTrim,
-      last_name: lastTrim,
-      email: emailTrim,
-      phone_number: phoneTrim,
-      document_url: docTrim,
-      mockPondId: mock.id,
-      ammoniaLevel: mock.ammoniaLevel,
-    };
-    console.log("Claim pond payload", payload);
-    setSubmitted(true);
-    setTimeout(() => onClose(), 1200);
+    if (!isValid || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const token = localStorage.getItem("aqw-idToken") || sessionStorage.getItem("aqw-idToken");
+      if (!token) {
+        setSubmitError("Login required to submit a claim.");
+        return;
+      }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/owners/claims`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          first_name: firstTrim,
+          last_name: lastTrim,
+          email: emailTrim,
+          phone_number: phoneTrim,
+          document_url: docTrim,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const detail = typeof data?.detail === "string" ? data.detail : Array.isArray(data?.detail) ? data.detail.map((d: { msg?: string }) => d?.msg || JSON.stringify(d)).join("; ") : "Submit failed";
+        setSubmitError(detail);
+        return;
+      }
+      console.log("Claim pond saved", data?.owner);
+      setSubmitted(true);
+      setTimeout(() => onClose(), 1200);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Submit failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -159,10 +184,11 @@ export default function ClaimPondModal({
 
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={onClose} className="btn btn-ghost flex-1 h-11 rounded-xl text-sm">{t("claim.cancel")}</button>
-              <button type="submit" disabled={!isValid} className="btn btn-cyan btn-shine flex-1 h-11 rounded-xl text-sm font-bold disabled:opacity-50">
-                {t("claim.submit")}
+              <button type="submit" disabled={!isValid || submitting} className="btn btn-cyan btn-shine flex-1 h-11 rounded-xl text-sm font-bold disabled:opacity-50">
+                {submitting ? "..." : t("claim.submit")}
               </button>
             </div>
+            {submitError && <p className="text-xs text-alert">{submitError}</p>}
           </form>
         )}
       </div>
