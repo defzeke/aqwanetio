@@ -7,6 +7,7 @@ export type Station = {
   latitude: number;
   longitude: number;
   ownerId?: string | null;
+  ownerName?: string | null;
 };
 
 // ponytail: always hit Neon – no in-memory cache, no localStorage for ownership

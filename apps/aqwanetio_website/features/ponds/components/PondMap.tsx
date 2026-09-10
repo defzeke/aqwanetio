@@ -186,7 +186,11 @@ export default function PondMap({
                   >
                     {t("mapPopup.viewDetails")}
                   </button>
-                  {user && !loading && (
+                  {station.ownerId ? (
+                    <p className="text-xs font-semibold text-ink">
+                      {t("mapPopup.ownedBy", { name: station.ownerName ?? "—" })}
+                    </p>
+                  ) : user && !loading ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -197,7 +201,7 @@ export default function PondMap({
                     >
                       {t("mapPopup.claimPond")}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </MarkerPopup>
             </MapMarker>

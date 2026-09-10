@@ -45,6 +45,7 @@ const dict = {
       viewDetails: "View Details",
       claimPond: "Claim Pond",
       claimPondDesc: "Submit ownership proof for {location}",
+      ownedBy: "Owned by: {name}",
     },
     claim: {
       driveGuideTitle: "How to paste Drive link",
@@ -241,6 +242,7 @@ const dict = {
       viewDetails: "Tingnan ang Detalye",
       claimPond: "I-claim ang Pond",
       claimPondDesc: "Magsumite ng patunay para sa {location}",
+      ownedBy: "Pagmamay-ari ni: {name}",
     },
     claim: {
       driveGuideTitle: "Paano i-paste ang Drive link",

@@ -51,3 +51,8 @@ export async function reviewOwnerClaim(ownerId: number, action: "approved" | "re
   const data = await res.json();
   return data.owner as OwnerClaim;
 }
+
+export async function deleteOwnerClaim(ownerId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/owners/claims/${ownerId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(await parseError(res));
+}

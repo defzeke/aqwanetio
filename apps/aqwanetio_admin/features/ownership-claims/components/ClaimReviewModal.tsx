@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { OwnerClaim } from "../services/ownership-claims.service";
-import { reviewOwnerClaim } from "../services/ownership-claims.service";
+import { deleteOwnerClaim, reviewOwnerClaim } from "../services/ownership-claims.service";
 
 function StatusPill({ status }: { status: OwnerClaim["status"] }) {
   const cls =
@@ -22,12 +22,14 @@ export default function ClaimReviewModal({
   claim,
   onClose,
   onReviewed,
+  onRemoved,
 }: {
   claim: OwnerClaim;
   onClose: () => void;
   onReviewed: (updated: OwnerClaim) => void;
+  onRemoved?: (ownerId: number) => void;
 }) {
-  const [busy, setBusy] = useState<"approved" | "rejected" | null>(null);
+  const [busy, setBusy] = useState<"approved" | "rejected" | "remove" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleReview(action: "approved" | "rejected") {
@@ -39,6 +41,21 @@ export default function ClaimReviewModal({
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Review failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleRemove() {
+    if (!confirm(`Remove ownership of ${claim.station_location ?? `#${claim.station_id ?? "?"}`} ? This deletes the claim and frees the pond.`)) return;
+    setBusy("remove");
+    setError(null);
+    try {
+      await deleteOwnerClaim(claim.owner_id);
+      onRemoved?.(claim.owner_id);
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Remove failed");
     } finally {
       setBusy(null);
     }
@@ -117,37 +134,57 @@ export default function ClaimReviewModal({
           </div>
         </dl>
 
-        <p className="mt-4 text-[12px] text-admin-text-secondary">
-          Confirm grants ownership of the fixed requested pond above. Admin cannot change station.
-        </p>
-
         {error && <p className="mt-2 text-[13px] text-admin-red-text">{error}</p>}
 
         <div className="mt-4 flex gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded border border-admin-border px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-admin-text-secondary hover:bg-admin-sidebar"
+            disabled={busy !== null}
+            className="flex-1 rounded border border-admin-border px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-admin-text-secondary hover:bg-admin-sidebar disabled:opacity-50"
           >
             CLOSE
           </button>
-          <button
-            type="button"
-            disabled={busy !== null || claim.status !== "pending"}
-            onClick={() => handleReview("rejected")}
-            className="flex-1 rounded bg-admin-red px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
-          >
-            {busy === "rejected" ? "…" : "REJECT"}
-          </button>
-          <button
-            type="button"
-            disabled={busy !== null || !canConfirm}
-            title={!canConfirm ? "No requested station – cannot confirm" : undefined}
-            onClick={() => handleReview("approved")}
-            className="flex-1 rounded bg-admin-green px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
-          >
-            {busy === "approved" ? "…" : "CONFIRM OWNER"}
-          </button>
+          {claim.status === "approved" ? (
+            <button
+              type="button"
+              disabled={busy !== null}
+              onClick={handleRemove}
+              className="flex-1 rounded bg-amber-600 px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {busy === "remove" ? "…" : "REMOVE OWNERSHIP"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={busy !== null || claim.status !== "pending"}
+              onClick={() => handleReview("rejected")}
+              className="flex-1 rounded bg-admin-red px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {busy === "rejected" ? "…" : "REJECT"}
+            </button>
+          )}
+          {claim.status === "pending" && (
+            <button
+              type="button"
+              disabled={busy !== null || !canConfirm}
+              title={!canConfirm ? "No requested station – cannot confirm" : undefined}
+              onClick={() => handleReview("approved")}
+              className="flex-1 rounded bg-admin-green px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {busy === "approved" ? "…" : "CONFIRM OWNER"}
+            </button>
+          )}
+          {claim.status !== "pending" && claim.status !== "approved" && (
+            <button
+              type="button"
+              disabled={busy !== null}
+              onClick={handleRemove}
+              className="flex-1 rounded bg-admin-red px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {busy === "remove" ? "…" : "DELETE CLAIM"}
+            </button>
+          )}
         </div>
       </div>
     </div>

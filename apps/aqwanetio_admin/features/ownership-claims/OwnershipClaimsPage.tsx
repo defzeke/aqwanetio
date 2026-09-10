@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ClaimReviewModal from "./components/ClaimReviewModal";
 import type { OwnerClaim, OwnerClaimStatus } from "./services/ownership-claims.service";
 import { listOwnerClaims } from "./services/ownership-claims.service";
@@ -22,24 +22,22 @@ export default function OwnershipClaimsPage() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<OwnerClaim | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const fetchClaims = useCallback(async () => {
     setLoading(true);
     setError(null);
-    listOwnerClaims()
-      .then((rows) => {
-        if (!cancelled) setClaims(rows);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load claims");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const rows = await listOwnerClaims();
+      setClaims(rows);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load claims");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchClaims();
+  }, [fetchClaims]);
 
   const counts = useMemo(() => {
     const c: Record<Filter, number> = { all: claims.length, pending: 0, approved: 0, rejected: 0 };
@@ -70,6 +68,11 @@ export default function OwnershipClaimsPage() {
     setSelected((cur) => (cur && cur.owner_id === updated.owner_id ? updated : cur));
   }
 
+  function handleRemoved(ownerId: number) {
+    setClaims((prev) => prev.filter((r) => r.owner_id !== ownerId));
+    setSelected(null);
+  }
+
   return (
     <div className="flex flex-col gap-6 w-full pb-12 pt-24 px-6 max-w-[1440px] mx-auto">
       <div className="flex flex-col gap-1">
@@ -96,12 +99,21 @@ export default function OwnershipClaimsPage() {
               </button>
             ))}
           </div>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, email, station…"
-            className="h-10 w-full sm:w-64 rounded border border-admin-border bg-admin-surface px-3 text-[14px] text-admin-gray-400 placeholder:text-admin-text-muted"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search name, email, station…"
+              className="h-10 w-full sm:w-64 rounded border border-admin-border bg-admin-surface px-3 text-[14px] text-admin-gray-400 placeholder:text-admin-text-muted"
+            />
+            <button
+              onClick={fetchClaims}
+              disabled={loading}
+              className="h-10 rounded border border-admin-border bg-admin-surface px-4 text-[11px] font-bold tracking-[0.55px] text-admin-text hover:bg-admin-sidebar disabled:opacity-50"
+            >
+              {loading ? "…" : "REFRESH"}
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -189,6 +201,7 @@ export default function OwnershipClaimsPage() {
           claim={selected}
           onClose={() => setSelected(null)}
           onReviewed={handleReviewed}
+          onRemoved={handleRemoved}
         />
       )}
     </div>
