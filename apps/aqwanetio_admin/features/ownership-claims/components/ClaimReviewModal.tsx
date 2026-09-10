@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import type { OwnerClaim } from "../services/ownership-claims.service";
 import { reviewOwnerClaim } from "../services/ownership-claims.service";
-import { fetchStations, type AdminStation } from "../services/stations.service";
 
 function StatusPill({ status }: { status: OwnerClaim["status"] }) {
   const cls =
@@ -30,65 +29,12 @@ export default function ClaimReviewModal({
 }) {
   const [busy, setBusy] = useState<"approved" | "rejected" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // ponytail: auto-preselect requested pin, searchable picker, OWNED badge not hidden
-  const [selectedId, setSelectedId] = useState<number | null>(claim.station_id ?? null);
-  const [stations, setStations] = useState<AdminStation[]>([]);
-  const [stationsError, setStationsError] = useState<string | null>(null);
-  const [stationsLoading, setStationsLoading] = useState(true);
-  const [q, setQ] = useState("");
-
-  useEffect(() => {
-    setSelectedId(claim.station_id ?? null);
-  }, [claim.station_id]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setStationsLoading(true);
-    fetchStations()
-      .then((rows) => {
-        if (!cancelled) setStations(rows);
-      })
-      .catch((e) => {
-        if (!cancelled) setStationsError(e instanceof Error ? e.message : "Failed to load stations");
-      })
-      .finally(() => {
-        if (!cancelled) setStationsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    if (!needle) return stations.slice(0, 80);
-    return stations
-      .filter(
-        (s) =>
-          s.location.toLowerCase().includes(needle) ||
-          s.municipality.toLowerCase().includes(needle) ||
-          (s.province ?? "").toLowerCase().includes(needle) ||
-          String(s.stationId).includes(needle)
-      )
-      .slice(0, 80);
-  }, [stations, q]);
-
-  const selectedStation = useMemo(
-    () => (selectedId != null ? stations.find((s) => s.stationId === selectedId) ?? null : null),
-    [stations, selectedId]
-  );
 
   async function handleReview(action: "approved" | "rejected") {
     setBusy(action);
     setError(null);
     try {
-      const effective = selectedId ?? claim.station_id ?? null;
-      if (action === "approved" && effective == null) {
-        setError("Select a station to approve — pick from the list.");
-        setBusy(null);
-        return;
-      }
-      const updated = await reviewOwnerClaim(claim.owner_id, action, effective ?? undefined);
+      const updated = await reviewOwnerClaim(claim.owner_id, action);
       onReviewed(updated);
       onClose();
     } catch (e) {
@@ -97,6 +43,8 @@ export default function ClaimReviewModal({
       setBusy(null);
     }
   }
+
+  const canConfirm = claim.status === "pending" && claim.station_id != null;
 
   return (
     <div
@@ -123,69 +71,23 @@ export default function ClaimReviewModal({
         </div>
 
         <dl className="mt-4 flex flex-col gap-2 text-[14px]">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
             <dt className="text-[11px] font-bold tracking-[0.55px] text-admin-text-secondary">STATION</dt>
             <dd className="text-admin-gray-400">
               {claim.station_location ? (
-                <p className="text-[13px]">
-                  Requested: {claim.station_location}
+                <p className="text-[14px] font-semibold">
+                  {claim.station_location}
                   {claim.station_municipality ? ` — ${claim.station_municipality}` : ""}
-                  {claim.station_province ? `, ${claim.station_province}` : ""} #{claim.station_id}
+                  {claim.station_province ? `, ${claim.station_province}` : ""}
+                  <span className="ml-2 font-mono text-[12px] font-normal">#{claim.station_id}</span>
                 </p>
               ) : claim.station_id ? (
-                <p className="text-[13px] font-mono">Requested: #{claim.station_id}</p>
+                <p className="text-[13px] font-mono">#{claim.station_id}</p>
               ) : (
-                <p className="text-[13px] text-admin-text-muted">No pin requested — pick a station</p>
+                <p className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                  No pin requested — ask user to re-submit claim from map pin
+                </p>
               )}
-
-              <div className="mt-2">
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search station name, municipality, province or ID…"
-                  className="w-full rounded border border-admin-border bg-admin-surface px-3 py-2 text-[13px] text-admin-gray-400 placeholder:text-admin-text-muted"
-                />
-                {stationsLoading ? (
-                  <p className="mt-2 text-[12px] text-admin-text-secondary">Loading stations…</p>
-                ) : stationsError ? (
-                  <p className="mt-2 text-[12px] text-admin-red-text">{stationsError}</p>
-                ) : (
-                  <div className="mt-2 max-h-[220px] overflow-auto rounded border border-admin-border">
-                    {filtered.length === 0 ? (
-                      <p className="px-3 py-6 text-[12px] text-admin-text-secondary">No stations match.</p>
-                    ) : (
-                      filtered.map((s) => {
-                        const owned = !!s.ownerId;
-                        const active = s.stationId === selectedId;
-                        return (
-                          <button
-                            key={s.stationId}
-                            type="button"
-                            onClick={() => setSelectedId(s.stationId)}
-                            className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[13px] hover:bg-admin-sidebar ${active ? "bg-admin-green-bg" : ""}`}
-                          >
-                            <span className="text-admin-gray-400">
-                              {s.location} — {s.municipality}
-                              {s.province ? `, ${s.province}` : ""} <span className="font-mono text-[11px]">#{s.stationId}</span>
-                            </span>
-                            {owned ? (
-                              <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">OWNED</span>
-                            ) : (
-                              <span className="shrink-0 rounded bg-admin-green-bg px-1.5 py-0.5 text-[10px] font-bold text-admin-green-text">FREE</span>
-                            )}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-                {selectedStation && (
-                  <p className="mt-2 text-[12px] text-admin-text-secondary">
-                    Selected: {selectedStation.location} — {selectedStation.municipality} #{selectedStation.stationId}
-                    {selectedStation.ownerId ? " (already owned)" : ""}
-                  </p>
-                )}
-              </div>
             </dd>
           </div>
           <div className="flex gap-2">
@@ -215,8 +117,8 @@ export default function ClaimReviewModal({
           </div>
         </dl>
 
-        <p className="mt-4 text-[13px] text-admin-text-secondary">
-          Auto-preselected from the pin the user claimed. Keep it or search & pick another — owned stations show OWNED badge but remain selectable.
+        <p className="mt-4 text-[12px] text-admin-text-secondary">
+          Confirm grants ownership of the fixed requested pond above. Admin cannot change station.
         </p>
 
         {error && <p className="mt-2 text-[13px] text-admin-red-text">{error}</p>}
@@ -231,7 +133,7 @@ export default function ClaimReviewModal({
           </button>
           <button
             type="button"
-            disabled={busy !== null}
+            disabled={busy !== null || claim.status !== "pending"}
             onClick={() => handleReview("rejected")}
             className="flex-1 rounded bg-admin-red px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
           >
@@ -239,7 +141,8 @@ export default function ClaimReviewModal({
           </button>
           <button
             type="button"
-            disabled={busy !== null}
+            disabled={busy !== null || !canConfirm}
+            title={!canConfirm ? "No requested station – cannot confirm" : undefined}
             onClick={() => handleReview("approved")}
             className="flex-1 rounded bg-admin-green px-4 py-2.5 text-[11px] font-bold tracking-[0.55px] text-white hover:opacity-90 disabled:opacity-50"
           >

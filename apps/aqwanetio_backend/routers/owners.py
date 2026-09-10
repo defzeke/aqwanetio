@@ -37,8 +37,6 @@ CLAIM_SELECT = (
     "document_url, status, created_at FROM tbl_owner"
 )
 
-# ponytail: auto-preselect requested pin, not hidden – show OWNED badge via stations picker
-# COALESCE(requested, owned) so pending shows pin, approved shows owned
 CLAIM_SELECT_JOIN = (
     "SELECT o.owner_id, o.user_id, o.first_name, o.last_name, o.email, o.phone_number, "
     "o.document_url, o.status, o.created_at, "
@@ -234,6 +232,7 @@ def submit_owner_claim(payload: OwnerClaimPayload, decoded=Depends(get_token)):
 
 class OwnerReviewPayload(BaseModel):
     action: constr(strip_whitespace=True, min_length=1, max_length=20)  # type: ignore
+    # ponytail: ignored – admin cannot pick station, fixed to requested_station_id
     station_id: Optional[int] = None
 
 
@@ -255,7 +254,9 @@ def list_owner_claims(status: Optional[str] = None):
 @router.patch("/owners/claims/{owner_id}")
 def review_owner_claim(owner_id: int, payload: OwnerReviewPayload):
     action = payload.action.strip().lower()
-    station_id = payload.station_id
+    # ponytail: admin cannot pick station – fixed to what user requested
+    if payload.station_id is not None:
+        raise HTTPException(status_code=400, detail="station_id cannot be set by admin – claim is fixed to requested pin")
     if action in ("approve", "approved"):
         new_status = "approved"
     elif action in ("reject", "rejected"):
@@ -265,27 +266,23 @@ def review_owner_claim(owner_id: int, payload: OwnerReviewPayload):
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
-                # fetch requested_station_id as fallback for approve
                 try:
                     cur.execute("SELECT user_id, requested_station_id FROM tbl_owner WHERE owner_id = %s", (owner_id,))
                     owner_row = cur.fetchone()
                     if not owner_row:
                         raise HTTPException(status_code=404, detail="Owner claim not found")
-                    user_id, requested_sid = owner_row[0], owner_row[1] if len(owner_row) > 1 else None
+                    user_id, station_id = owner_row[0], owner_row[1] if len(owner_row) > 1 else None
                 except psycopg.errors.UndefinedColumn:
                     cur.connection.rollback()
                     cur.execute("SELECT user_id, station_id FROM tbl_owner WHERE owner_id = %s", (owner_id,))
                     r = cur.fetchone()
                     if not r:
                         raise HTTPException(status_code=404, detail="Owner claim not found")
-                    user_id, requested_sid = r[0], r[1] if len(r) > 1 else None
-                    # normalize fetch again for later
+                    user_id, station_id = r[0], r[1] if len(r) > 1 else None
                 except psycopg.errors.UndefinedTable:
                     raise
-                if station_id is None:
-                    station_id = requested_sid
                 if action in ("approve", "approved") and station_id is None:
-                    raise HTTPException(status_code=400, detail="station_id is required when approving")
+                    raise HTTPException(status_code=400, detail="claim has no requested station – cannot approve")
 
                 cur.execute(
                     "UPDATE tbl_owner SET status = %s WHERE owner_id = %s "

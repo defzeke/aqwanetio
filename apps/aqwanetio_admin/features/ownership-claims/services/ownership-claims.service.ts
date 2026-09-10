@@ -41,17 +41,11 @@ export async function listOwnerClaims(status?: OwnerClaimStatus | "all"): Promis
   return (data.claims ?? []) as OwnerClaim[];
 }
 
-export async function reviewOwnerClaim(
-  ownerId: number,
-  action: "approved" | "rejected",
-  stationId?: number | null
-): Promise<OwnerClaim> {
-  const body: Record<string, unknown> = { action };
-  if (action === "approved" && stationId != null) body.station_id = stationId;
+export async function reviewOwnerClaim(ownerId: number, action: "approved" | "rejected"): Promise<OwnerClaim> {
   const res = await fetch(`${API_BASE}/owners/claims/${ownerId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ action }),
   });
   if (!res.ok) throw new Error(await parseError(res));
   const data = await res.json();
