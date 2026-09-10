@@ -103,7 +103,7 @@ export default function PondChart({ readings, predictions, metric = "ammonia" }:
               minTickGap={32}
               tickFormatter={(value) => {
                 const d = new Date(value);
-                return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric" });
               }}
             />
             <ChartTooltip
@@ -111,10 +111,12 @@ export default function PondChart({ readings, predictions, metric = "ammonia" }:
                 <ChartTooltipContent
                   className="w-[150px]"
                   labelFormatter={(value) =>
-                    new Date(value as string).toLocaleDateString("en-US", {
+                    new Date(value as string).toLocaleString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
                     })
                   }
                 />

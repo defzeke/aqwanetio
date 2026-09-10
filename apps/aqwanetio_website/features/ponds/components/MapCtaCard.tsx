@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useTranslation } from "@/lib/translations";
+import { useAuth } from "@/lib/auth-context";
 
 export default function MapCtaCard() {
   const { t } = useTranslation();
+  const { user, loading } = useAuth();
+
+  if (loading || user) return null;
 
   return (
     <div className="neu-card pointer-events-auto w-[300px] max-w-[calc(100vw-2.5rem)] overflow-hidden">

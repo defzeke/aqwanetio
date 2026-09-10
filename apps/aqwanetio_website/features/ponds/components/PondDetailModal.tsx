@@ -8,14 +8,13 @@ import PondChart, { type ChartMetric } from "./PondChart";
 import StationComparisonBar from "./StationComparisonBar";
 import PondHealthRadar from "./PondHealthRadar";
 import { useTranslation } from "@/lib/translations";
+import { format } from "date-fns";
+import { ChevronDownIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const DAY_MS = 86_400_000;
-
-function toDateTimeLocal(ts: number): string {
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 export default function PondDetailModal({
   pondId,
@@ -30,22 +29,23 @@ export default function PondDetailModal({
 
   const [view, setView] = useState<"live" | "history">("live");
   const [nowMs] = useState(() => Date.now());
-  const [endTime, setEndTime] = useState(() => toDateTimeLocal(nowMs - DAY_MS));
+  const [date, setDate] = useState<Date | undefined>(() => new Date(nowMs - DAY_MS));
+  const [dateOpen, setDateOpen] = useState(false);
   const [metric, setMetric] = useState<ChartMetric>("ammonia");
   const [barMetric, setBarMetric] = useState<ChartMetric>("209");
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !dateOpen) onClose();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
+  }, [onClose, dateOpen]);
 
   const endTs = useMemo(() => {
-    const raw = new Date(endTime).getTime();
+    const raw = date ? date.getTime() : nowMs;
     return Number.isFinite(raw) ? Math.min(raw, nowMs) : nowMs;
-  }, [endTime, nowMs]);
+  }, [date, nowMs]);
 
   const readings = useMemo(
     () =>
@@ -132,17 +132,30 @@ export default function PondDetailModal({
               </div>
 
               {view === "history" && (
-                <label className="flex items-center gap-2 text-sm font-medium text-muted">
-                  <span>{t("modal.dateTime")}</span>
-                  <input
-                    type="datetime-local"
-                    value={endTime}
-                    min={toDateTimeLocal(nowMs - 30 * DAY_MS)}
-                    max={toDateTimeLocal(nowMs)}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="neu-input h-10 rounded-xl px-3 text-sm"
-                  />
-                </label>
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      data-empty={!date}
+                      className="w-[212px] justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
+                    >
+                      {date ? format(date, "PPP") : <span>{t("modal.dateTime")}</span>}
+                      <ChevronDownIcon data-icon="inline-end" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="z-[1010] w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(d) => {
+                        if (d) setDate(d);
+                        setDateOpen(false);
+                      }}
+                      defaultMonth={date}
+                      disabled={(d) => d > new Date(nowMs) || d < new Date(nowMs - 30 * DAY_MS)}
+                    />
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
 
