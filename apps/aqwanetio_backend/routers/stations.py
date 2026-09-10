@@ -25,9 +25,16 @@ def list_stations():
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT station_id, location, municipality, province, region, latitude, longitude FROM tbl_station ORDER BY station_id"
-                )
+                # ponytail: owner_id may not exist yet – fallback
+                try:
+                    cur.execute(
+                        "SELECT station_id, location, municipality, province, region, latitude, longitude, owner_id FROM tbl_station ORDER BY station_id"
+                    )
+                except psycopg.errors.UndefinedColumn:
+                    cur.connection.rollback()
+                    cur.execute(
+                        "SELECT station_id, location, municipality, province, region, latitude, longitude FROM tbl_station ORDER BY station_id"
+                    )
                 rows = cur.fetchall()
                 cols = [d[0] for d in cur.description] if cur.description else []
                 result = []
@@ -42,6 +49,7 @@ def list_stations():
                             "region": d["region"],
                             "latitude": float(d["latitude"]),
                             "longitude": float(d["longitude"]),
+                            "ownerId": d.get("owner_id"),
                         }
                     )
                 return result
@@ -58,10 +66,17 @@ def get_station(station_id: int):
     try:
         with _get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT station_id, location, municipality, province, region, latitude, longitude FROM tbl_station WHERE station_id = %s",
-                    (station_id,),
-                )
+                try:
+                    cur.execute(
+                        "SELECT station_id, location, municipality, province, region, latitude, longitude, owner_id FROM tbl_station WHERE station_id = %s",
+                        (station_id,),
+                    )
+                except psycopg.errors.UndefinedColumn:
+                    cur.connection.rollback()
+                    cur.execute(
+                        "SELECT station_id, location, municipality, province, region, latitude, longitude FROM tbl_station WHERE station_id = %s",
+                        (station_id,),
+                    )
                 row = cur.fetchone()
                 if not row:
                     raise HTTPException(status_code=404, detail="Station not found")
@@ -75,6 +90,7 @@ def get_station(station_id: int):
                     "region": d["region"],
                     "latitude": float(d["latitude"]),
                     "longitude": float(d["longitude"]),
+                    "ownerId": d.get("owner_id"),
                 }
     except HTTPException:
         raise

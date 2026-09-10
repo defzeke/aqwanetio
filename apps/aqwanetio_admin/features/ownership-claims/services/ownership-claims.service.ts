@@ -10,6 +10,10 @@ export interface OwnerClaim {
   document_url: string;
   status: OwnerClaimStatus;
   created_at: string;
+  station_id?: number | null;
+  station_location?: string | null;
+  station_municipality?: string | null;
+  station_province?: string | null;
 }
 
 const API_BASE =
@@ -39,12 +43,15 @@ export async function listOwnerClaims(status?: OwnerClaimStatus | "all"): Promis
 
 export async function reviewOwnerClaim(
   ownerId: number,
-  action: "approved" | "rejected"
+  action: "approved" | "rejected",
+  stationId?: number | null
 ): Promise<OwnerClaim> {
+  const body: Record<string, unknown> = { action };
+  if (action === "approved" && stationId != null) body.station_id = stationId;
   const res = await fetch(`${API_BASE}/owners/claims/${ownerId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(await parseError(res));
   const data = await res.json();

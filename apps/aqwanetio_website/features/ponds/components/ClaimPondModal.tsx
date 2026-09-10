@@ -97,6 +97,7 @@ export default function ClaimPondModal({
           email: emailTrim,
           phone_number: phoneTrim,
           document_url: docTrim,
+          station_id: station.stationId,
         }),
       });
       const data = await res.json().catch(() => ({}));

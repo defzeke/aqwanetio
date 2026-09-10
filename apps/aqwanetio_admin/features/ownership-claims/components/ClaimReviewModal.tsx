@@ -29,12 +29,20 @@ export default function ClaimReviewModal({
 }) {
   const [busy, setBusy] = useState<"approved" | "rejected" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [overrideStationId, setOverrideStationId] = useState<string>(claim.station_id ? String(claim.station_id) : "");
 
   async function handleReview(action: "approved" | "rejected") {
     setBusy(action);
     setError(null);
     try {
-      const updated = await reviewOwnerClaim(claim.owner_id, action);
+      const effectiveStationId =
+        claim.station_id != null ? claim.station_id : overrideStationId.trim() ? Number(overrideStationId.trim()) : null;
+      if (action === "approved" && effectiveStationId == null) {
+        setError("Station is required to approve — enter Station ID.");
+        setBusy(null);
+        return;
+      }
+      const updated = await reviewOwnerClaim(claim.owner_id, action, effectiveStationId ?? undefined);
       onReviewed(updated);
       onClose();
     } catch (e) {
@@ -70,6 +78,20 @@ export default function ClaimReviewModal({
         </div>
 
         <dl className="mt-4 flex flex-col gap-2 text-[14px]">
+          <div className="flex gap-2">
+            <dt className="w-24 shrink-0 text-[11px] font-bold tracking-[0.55px] text-admin-text-secondary pt-0.5">STATION</dt>
+            <dd className="text-admin-gray-400">
+              {claim.station_location ? `${claim.station_location}${claim.station_municipality ? ` — ${claim.station_municipality}` : ""}${claim.station_province ? `, ${claim.station_province}` : ""}` : claim.station_id ? `#${claim.station_id}` : "—"}
+              {claim.station_id == null && (
+                <input
+                  value={overrideStationId}
+                  onChange={(e) => setOverrideStationId(e.target.value)}
+                  placeholder="Enter station ID to approve"
+                  className="ml-2 w-32 rounded border border-admin-border px-2 py-1 text-[12px] font-mono"
+                />
+              )}
+            </dd>
+          </div>
           <div className="flex gap-2">
             <dt className="w-24 shrink-0 text-[11px] font-bold tracking-[0.55px] text-admin-text-secondary pt-0.5">EMAIL</dt>
             <dd className="text-admin-gray-400 break-all">{claim.email}</dd>

@@ -53,11 +53,14 @@ export default function OwnershipClaimsPage() {
       if (filter !== "all" && r.status !== filter) return false;
       if (!q) return true;
       const name = `${r.first_name} ${r.last_name}`.toLowerCase();
+      const station = `${r.station_location ?? ""} ${r.station_municipality ?? ""}`.toLowerCase();
       return (
         name.includes(q) ||
         r.email.toLowerCase().includes(q) ||
         r.phone_number.toLowerCase().includes(q) ||
-        String(r.owner_id).includes(q)
+        station.includes(q) ||
+        String(r.owner_id).includes(q) ||
+        String(r.station_id ?? "").includes(q)
       );
     });
   }, [claims, filter, query]);
@@ -96,7 +99,7 @@ export default function OwnershipClaimsPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, email, phone…"
+            placeholder="Search name, email, station…"
             className="h-10 w-full sm:w-64 rounded border border-admin-border bg-admin-surface px-3 text-[14px] text-admin-gray-400 placeholder:text-admin-text-muted"
           />
         </div>
@@ -111,10 +114,10 @@ export default function OwnershipClaimsPage() {
               No {filter === "all" ? "" : `${filter} `}claims found.
             </p>
           ) : (
-            <table className="w-full min-w-[760px]">
+            <table className="w-full min-w-[860px]">
               <thead>
                 <tr className="bg-admin-sidebar border-b border-admin-border">
-                  {["CLAIM", "NAME", "EMAIL", "PHONE", "SUBMITTED", "STATUS", "ACTION"].map((h) => (
+                  {["CLAIM", "OWNER", "STATION", "EMAIL", "PHONE", "SUBMITTED", "STATUS", "ACTION"].map((h) => (
                     <th
                       key={h}
                       className="text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] px-4 py-3 text-left"
@@ -132,6 +135,18 @@ export default function OwnershipClaimsPage() {
                     </td>
                     <td className="px-4 py-3 text-[14px] font-semibold text-admin-gray-400">
                       {r.first_name} {r.last_name}
+                    </td>
+                    <td className="px-4 py-3 text-[13px] text-admin-gray-400">
+                      {r.station_location ? (
+                        <span>
+                          {r.station_location}
+                          {r.station_municipality ? ` — ${r.station_municipality}` : ""}
+                        </span>
+                      ) : r.station_id ? (
+                        <span className="font-mono text-[12px]">#{r.station_id}</span>
+                      ) : (
+                        <span className="text-admin-text-muted">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-[13px] text-admin-gray-400 break-all">{r.email}</td>
                     <td className="px-4 py-3">
