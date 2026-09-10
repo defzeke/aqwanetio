@@ -6,20 +6,18 @@ export type Station = {
   region: string;
   latitude: number;
   longitude: number;
+  ownerId?: string | null;
 };
 
-let cache: Station[] | null = null;
-
+// ponytail: always hit Neon – no in-memory cache, no localStorage for ownership
 export async function fetchStations(signal?: AbortSignal): Promise<Station[]> {
-  if (cache) return cache;
   const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
   const res = await fetch(`${API}/stations`, { cache: "no-store", signal });
   if (!res.ok) throw new Error(`GET /stations ${res.status}`);
   const rows = await res.json();
-  cache = Array.isArray(rows) ? (rows as Station[]) : [];
-  return cache;
+  return Array.isArray(rows) ? (rows as Station[]) : [];
 }
 
 export function clearStationsCache() {
-  cache = null;
+  // kept for compat – no cache to clear
 }
