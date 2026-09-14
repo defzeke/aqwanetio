@@ -21,7 +21,7 @@ _default_origins = [
     "http://localhost:3001",
     "http://127.0.0.1:3001",
     "https://aqwanetio-km0b.onrender.com",
-    "https://aqwanetio.onrender.com",
+    "https://aqwanetio-1.onrender.com",
 ]
 origins = _frontend_origins if _frontend_origins else _default_origins
 
