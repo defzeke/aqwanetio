@@ -44,15 +44,23 @@ class MenuSheet extends StatelessWidget {
                       title: Text(t('header.register'), style: TextStyle(fontSize: 14, color: AppColors.text)),
                       onTap: () => _go(context, '/register'),
                     ),
-                  ] else
+                  ] else ...[
                     ListTile(
-                      leading: Icon(Icons.logout_outlined, size: 20, color: AppColors.textMuted),
-                      title: Text('${t('header.signOut')} (${u.name})', style: TextStyle(fontSize: 14, color: AppColors.text)),
+                      leading: Icon(Icons.person_outline, size: 20, color: AppColors.textMuted),
+                      title: Text(t('auth.profileTitle'), style: TextStyle(fontSize: 14, color: AppColors.text)),
+                      subtitle: Text('${u.name} • ${u.email}', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                      onTap: () => _go(context, '/profile'),
+                    ),
+                    const Divider(height: 16),
+                    ListTile(
+                      leading: Icon(Icons.logout_outlined, size: 20, color: AppColors.alert),
+                      title: Text(t('header.signOut'), style: TextStyle(fontSize: 14, color: AppColors.alert)),
                       onTap: () {
                         authProvider.logout();
                         Navigator.of(context).pop();
                       },
                     ),
+                  ],
                 ]);
               },
             ),

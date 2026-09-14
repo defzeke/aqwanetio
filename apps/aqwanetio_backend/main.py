@@ -10,7 +10,8 @@ from routers.owners import router as owners_router
 
 app = FastAPI()
 
-# Allow Next.js website to talk to FastAPI
+# Allow website and Flutter clients to talk to FastAPI
+# allow all origins in dev; tighten to explicit list when you have a prod domain
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -20,8 +21,8 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

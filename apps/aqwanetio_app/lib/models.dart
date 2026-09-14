@@ -37,7 +37,8 @@ class User {
   final String email;
   final String name;
   final UserRole role;
-  User({required this.id, required this.email, required this.name, required this.role});
+  final String? phone;
+  User({required this.id, required this.email, required this.name, required this.role, this.phone});
 }
 
 PondStatus ammoniaToStatus(double a) {
