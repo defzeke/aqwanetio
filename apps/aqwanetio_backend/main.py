@@ -13,17 +13,32 @@ app = FastAPI()
 # Allow website and Flutter clients to talk to FastAPI
 # allow Render static site + localhost; explicit list needed when allow_credentials=True (firefox blocks * with creds)
 import os
+import re
 
-_frontend_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+_raw = os.getenv("ALLOWED_ORIGINS", "")
+# strip markdown paste like [url](url) that broke localhost:3000 preflight — extract https:// url
+_frontend_origins = []
+for _o in _raw.split(","):
+    _o = _o.strip()
+    if not _o:
+        continue
+    m = re.search(r'https?://[^\s\]\)]+', _o)
+    if m:
+        _o = m.group(0)
+    _o = _o.strip(" []()")
+    if _o:
+        _frontend_origins.append(_o)
 _default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
     "https://aqwanetio-km0b.onrender.com",
+    "https://aqwanetio.onrender.com",
     "https://aqwanetio-1.onrender.com",
 ]
-origins = _frontend_origins if _frontend_origins else _default_origins
+# merge defaults + env so markdown/paste can't shadow localhost
+origins = list(dict.fromkeys(_default_origins + _frontend_origins))
 
 # keep * fallback if no explicit origins; Use explicit list so Authorization header works with credentials
 app.add_middleware(
