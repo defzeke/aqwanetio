@@ -1,247 +1,248 @@
 import 'dart:math' as math;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../translations.dart';
 
-class PondChart extends StatefulWidget {
+// ponytail: exact port of website features/ponds/components/PondChart.tsx — 9 metrics, fl_chart replaces recharts
+class PondChart extends StatelessWidget {
   final List<Reading> readings;
   final List<Prediction> predictions;
-  const PondChart({super.key, required this.readings, required this.predictions});
+  final ChartMetric metric;
+  const PondChart({super.key, required this.readings, required this.predictions, this.metric = ChartMetric.ammonia});
 
-  @override
-  State<PondChart> createState() => _PondChartState();
-}
-
-class _PondChartState extends State<PondChart> {
-  static const _warning = 1.0;
-  static const _color = Color(0xFF22c55e);
-  int? _hoveredIdx;
-
-  List<Reading> get _history => widget.readings.reversed.toList();
+  Color _metricColor(ChartMetric m) {
+    if (m == ChartMetric.ammonia) return AppColors.cyan;
+    final hex = kMetricConfig[m]!.colorHex;
+    return Color(int.parse(hex.replaceFirst('#', ''), radix: 16) + 0xFF000000);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final history = _history;
-    final vals = history.map((r) => r.ammonia).toList();
+    final cfg = kMetricConfig[metric]!;
+    final label = t(cfg.labelKey);
+    final unit = cfg.unit;
+    final color = _metricColor(metric);
 
-    final forecastVals = widget.predictions.map((p) => p.predictedAmmonia).toList();
-    final upper = widget.predictions.map((p) => p.upperBound).toList();
-    final lower = widget.predictions.map((p) => p.lowerBound).toList();
+    // history reversed like website useMemo: hist = [...readings].reverse()
+    final hist = readings.reversed.toList();
+    final histVals = hist.map((r) => getMetricValue(r, metric)).toList();
+    final isForecast = metric == ChartMetric.ammonia && predictions.isNotEmpty;
+    final forecastVals = isForecast ? predictions.map((p) => p.predictedAmmonia).toList() : <double>[];
+    final forecastDates = isForecast ? predictions.map((p) => p.timestamp).toList() : <DateTime>[];
 
-    final allVals = [...vals, ...forecastVals];
+    final allVals = [...histVals, ...forecastVals];
     final minV = allVals.isEmpty ? 0.0 : allVals.reduce(math.min) * 0.92;
     final maxV = allVals.isEmpty ? 1.0 : allVals.reduce(math.max) * 1.08;
+    final range = (maxV - minV).abs() < 0.001 ? 1.0 : (maxV - minV);
+
+    final histSpots = <FlSpot>[
+      for (int i = 0; i < histVals.length; i++) FlSpot(i.toDouble(), histVals[i]),
+    ];
+    final forecastSpots = <FlSpot>[];
+    if (isForecast && forecastVals.isNotEmpty && histVals.isNotEmpty) {
+      // connector point at last history index then forecast points
+      forecastSpots.add(FlSpot((histVals.length - 1).toDouble(), histVals.last));
+      for (int i = 0; i < forecastVals.length; i++) {
+        forecastSpots.add(FlSpot((histVals.length + i).toDouble(), forecastVals[i]));
+      }
+    } else if (isForecast && forecastVals.isNotEmpty) {
+      for (int i = 0; i < forecastVals.length; i++) {
+        forecastSpots.add(FlSpot(i.toDouble(), forecastVals[i]));
+      }
+    }
+
+    final totalPoints = histVals.length + (isForecast ? forecastVals.length : 0);
+    final lastVal = histVals.isEmpty ? 0.0 : histVals.last;
+    final isAmmoniaSafe = metric == ChartMetric.ammonia ? lastVal < 1.0 : true;
+
+    // dates for x-axis lookup
+    final histDates = hist.map((r) => r.timestamp).toList();
+
+    String fmtX(double v) {
+      final idx = v.round().clamp(0, totalPoints - 1);
+      DateTime d;
+      if (idx < histDates.length) {
+        d = histDates[idx];
+      } else if (isForecast) {
+        final fIdx = idx - histDates.length;
+        d = fIdx < forecastDates.length ? forecastDates[fIdx] : DateTime.now();
+      } else {
+        d = DateTime.now();
+      }
+      // website: toLocaleString month short day numeric hour numeric
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final mon = months[d.month - 1];
+      final hour = d.hour % 12 == 0 ? 12 : d.hour % 12;
+      final ampm = d.hour >= 12 ? 'PM' : 'AM';
+      return '$mon ${d.day}, $hour $ampm';
+    }
+
+    String fmtTooltipDate(double v) {
+      final idx = v.round().clamp(0, totalPoints - 1);
+      DateTime d;
+      if (idx < histDates.length) {
+        d = histDates[idx];
+      } else if (isForecast) {
+        final fIdx = idx - histDates.length;
+        d = fIdx < forecastDates.length ? forecastDates[fIdx] : DateTime.now();
+      } else {
+        d = DateTime.now();
+      }
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${months[d.month - 1]} ${d.day}, ${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    }
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SizedBox(
-        height: 260,
-        child: GestureDetector(
-          onHorizontalDragUpdate: (d) {
-            final box = context.findRenderObject() as RenderBox?;
-            if (box == null) return;
-            final total = vals.length + forecastVals.length;
-            if (total == 0) return;
-            final pos = (d.localPosition.dx - 40) / (box.size.width - 80);
-            final idx = (pos * total).round().clamp(0, total - 1);
-            setState(() => _hoveredIdx = idx);
-          },
-          onTapDown: (d) {
-            final box = context.findRenderObject() as RenderBox?;
-            if (box == null) return;
-            final total = vals.length + forecastVals.length;
-            if (total == 0) return;
-            final pos = (d.localPosition.dx - 40) / (box.size.width - 80);
-            final idx = (pos * total).round().clamp(0, total - 1);
-            setState(() => _hoveredIdx = _hoveredIdx == idx ? null : idx);
-          },
-          child: CustomPaint(
-            size: Size.infinite,
-            painter: _ChartPainter(
-              vals: vals,
-              forecastVals: forecastVals,
-              upper: upper,
-              lower: lower,
-              minV: minV,
-              maxV: maxV,
-              warning: _warning,
-              color: _color,
-              hoveredIdx: _hoveredIdx,
-              historyCount: vals.length,
-              dark: AppColors.isDark,
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          _buildTile(history.isEmpty ? 0 : vals.last, t('modal.ammonia'), _color),
-        ],
-      ),
-    ]);
-  }
-
-  Widget _buildTile(double val, String label, Color color) {
-    final safe = val < _warning;
-    final dark = AppColors.isDark;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      // header like website CardHeader
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: safe ? (dark ? const Color(0xFF14532d) : const Color(0xFFbbf7d0)) : (dark ? const Color(0xFF7f1d1d) : const Color(0xFFfecaca))),
-          color: safe ? (dark ? const Color(0xFF052e16) : const Color(0xFFf0fdf4)) : (dark ? const Color(0xFF450a0a) : const Color(0xFFfef2f2)),
+          color: AppColors.surface,
+          border: Border(bottom: BorderSide(color: AppColors.border)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         ),
         child: Row(children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 8),
-          Text(label.split(' ')[0], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: safe ? (dark ? const Color(0xFFbbf7d0) : const Color(0xFF166534)) : (dark ? const Color(0xFFfecaca) : const Color(0xFF991b1b)))),
-          const Spacer(),
-          Text(val.toStringAsFixed(2), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: safe ? (dark ? const Color(0xFF4ade80) : const Color(0xFF15803d)) : AppColors.alert)),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: safe ? (dark ? const Color(0xFF14532d) : const Color(0xFFbbf7d0)) : (dark ? const Color(0xFF7f1d1d) : const Color(0xFFfecaca)), borderRadius: BorderRadius.circular(12)),
-            child: Text(safe ? t('status.safe') : t('status.critical'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: safe ? (dark ? const Color(0xFFbbf7d0) : const Color(0xFF166534)) : (dark ? const Color(0xFFfecaca) : const Color(0xFF991b1b)))),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+              const SizedBox(height: 2),
+              Text('$label – ${lastVal.toStringAsFixed(2)} $unit',
+                  style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            ]),
           ),
         ]),
       ),
-    );
+      Container(
+        height: 250,
+        padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.border),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+        ),
+        child: totalPoints == 0
+            ? Center(child: Text(t('search.empty'), style: TextStyle(color: AppColors.textMuted)))
+            : LineChart(
+                LineChartData(
+                  minX: 0,
+                  maxX: math.max(0, totalPoints - 1).toDouble(),
+                  minY: minV,
+                  maxY: maxV,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: range / 4,
+                    getDrawingHorizontalLine: (_) => FlLine(color: AppColors.chartGrid, strokeWidth: 1),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 44,
+                        interval: range / 4,
+                        getTitlesWidget: (v, meta) => SideTitleWidget(
+                          axisSide: meta.axisSide,
+                          child: Text(v.toStringAsFixed(2), style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 32,
+                        interval: math.max(1, totalPoints / 4),
+                        getTitlesWidget: (v, meta) {
+                          // show ~4 ticks like website minTickGap 32
+                          final step = math.max(1, totalPoints ~/ 4);
+                          final idx = v.round();
+                          if (idx % step != 0 && idx != totalPoints - 1) return const SizedBox.shrink();
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            child: Text(fmtX(v), style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      tooltipRoundedRadius: 8,
+                      tooltipBorder: BorderSide(color: AppColors.border),
+                      getTooltipColor: (_) => AppColors.surface,
+                      getTooltipItems: (spots) => spots.map((s) {
+                        final isF = s.barIndex == 1;
+                        final lbl = isF ? t('modal.forecastLegend') : label;
+                        return LineTooltipItem(
+                          '$lbl\n${s.y.toStringAsFixed(2)} $unit\n${fmtTooltipDate(s.x)}',
+                          TextStyle(fontSize: 11, color: AppColors.text, fontWeight: FontWeight.w500),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  extraLinesData: metric == ChartMetric.ammonia
+                      ? ExtraLinesData(horizontalLines: [
+                          HorizontalLine(
+                            y: 1.0,
+                            color: AppColors.alert.withValues(alpha: 0.7),
+                            strokeWidth: 1.5,
+                            dashArray: [6, 3],
+                          ),
+                        ])
+                      : null,
+                  lineBarsData: [
+                    if (histSpots.isNotEmpty)
+                      LineChartBarData(
+                        spots: histSpots,
+                        isCurved: true,
+                        color: color,
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                    if (forecastSpots.isNotEmpty)
+                      LineChartBarData(
+                        spots: forecastSpots,
+                        isCurved: true,
+                        color: color,
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dashArray: [6, 3],
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                  ],
+                ),
+              ),
+      ),
+      const SizedBox(height: 8),
+      // banner like website PondChart.tsx:130
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isAmmoniaSafe ? AppColors.safe.withValues(alpha: 0.3) : AppColors.alert.withValues(alpha: 0.3)),
+          color: isAmmoniaSafe ? AppColors.safe.withValues(alpha: 0.1) : AppColors.alert.withValues(alpha: 0.1),
+        ),
+        child: Row(children: [
+          Container(width: 10, height: 10, decoration: BoxDecoration(color: isAmmoniaSafe ? AppColors.safe : AppColors.alert, shape: BoxShape.circle)),
+          const SizedBox(width: 8),
+          Text('${t('modal.current')} $label:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isAmmoniaSafe ? AppColors.safe : AppColors.alert)),
+          const SizedBox(width: 6),
+          Text('${lastVal.toStringAsFixed(2)} $unit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isAmmoniaSafe ? AppColors.safe : AppColors.alert)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(color: isAmmoniaSafe ? AppColors.safe.withValues(alpha: 0.15) : AppColors.alert.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+            child: Text(isAmmoniaSafe ? t('status.safe') : t('status.critical'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: isAmmoniaSafe ? AppColors.safe : AppColors.alert)),
+          ),
+        ]),
+      ),
+    ]);
   }
-}
-
-class _ChartPainter extends CustomPainter {
-  final List<double> vals;
-  final List<double> forecastVals;
-  final List<double> upper;
-  final List<double> lower;
-  final double minV;
-  final double maxV;
-  final double warning;
-  final Color color;
-  final int? hoveredIdx;
-  final int historyCount;
-  final bool dark;
-
-  _ChartPainter({required this.vals, required this.forecastVals, required this.upper, required this.lower, required this.minV, required this.maxV, required this.warning, required this.color, this.hoveredIdx, required this.historyCount, required this.dark});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final total = vals.length + forecastVals.length;
-    if (total == 0) return;
-    final padL = 44.0, padR = 12.0, padT = 16.0, padB = 36.0;
-    final iW = size.width - padL - padR;
-    final iH = size.height - padT - padB;
-
-    double scaleX(int i) => padL + (i / math.max(total - 1, 1)) * iW;
-    double scaleY(double v) => padT + iH - ((v - minV) / (maxV - minV)) * iH;
-
-    final gridPaint = Paint()..color = AppColors.chartGrid..strokeWidth = 1;
-    for (int i = 0; i <= 4; i++) {
-      final y = padT + (i / 4) * iH;
-      canvas.drawLine(Offset(padL, y), Offset(padL + iW, y), gridPaint);
-    }
-
-    final warnPaint = Paint()..color = AppColors.alert.withValues(alpha: 0.7)..strokeWidth = 1.5;
-    final warnY = scaleY(warning);
-    if (warnY >= padT && warnY <= padT + iH) {
-      canvas.drawLine(Offset(padL, warnY), Offset(padL + iW, warnY), warnPaint);
-    }
-
-    if (forecastVals.isNotEmpty && upper.length == lower.length) {
-      final band = Paint()..color = AppColors.chartBand;
-      final path = Path();
-      final start = vals.length;
-      for (int i = 0; i < upper.length; i++) {
-        final x = scaleX(start + i);
-        if (i == 0) { path.moveTo(x, scaleY(upper[i])); }
-        else { path.lineTo(x, scaleY(upper[i])); }
-      }
-      for (int i = lower.length - 1; i >= 0; i--) {
-        path.lineTo(scaleX(start + i), scaleY(lower[i]));
-      }
-      path.close();
-      canvas.drawPath(path, band);
-    }
-
-    if (vals.isNotEmpty) {
-      final linePaint = Paint()..color = color..strokeWidth = 2..style = PaintingStyle.stroke..strokeJoin = StrokeJoin.round;
-      final pts = vals.asMap().entries.map((e) => Offset(scaleX(e.key), scaleY(e.value))).toList();
-      _drawPolyline(canvas, pts, linePaint);
-      for (final p in pts) {
-        canvas.drawCircle(p, 3, Paint()..color = color);
-      }
-    }
-
-    if (forecastVals.isNotEmpty) {
-      final start = vals.length;
-      final pts = forecastVals.asMap().entries.map((e) => Offset(scaleX(start + e.key), scaleY(e.value))).toList();
-      final dashPaint = Paint()..color = color..strokeWidth = 2..style = PaintingStyle.stroke..strokeJoin = StrokeJoin.round;
-      _drawDashedPolyline(canvas, pts, dashPaint);
-      if (vals.isNotEmpty && pts.isNotEmpty) {
-        final linePaint = Paint()..color = color..strokeWidth = 2..style = PaintingStyle.stroke..strokeJoin = StrokeJoin.round;
-        canvas.drawLine(Offset(scaleX(start - 1), scaleY(vals.last)), pts[0], linePaint);
-      }
-    }
-
-    if (hoveredIdx != null && hoveredIdx! < total) {
-      final x = scaleX(hoveredIdx!);
-      final linePaint = Paint()..color = AppColors.gray300..strokeWidth = 1;
-      canvas.drawLine(Offset(x, padT), Offset(x, padT + iH), linePaint);
-    }
-
-    yAxisLabels(canvas, padL, padT, iH, scaleY);
-    xAxisLabels(canvas, total, padT, iH, scaleX);
-  }
-
-  void _drawPolyline(Canvas canvas, List<Offset> pts, Paint paint) {
-    if (pts.length < 2) return;
-    final path = Path();
-    path.moveTo(pts[0].dx, pts[0].dy);
-    for (int i = 1; i < pts.length; i++) { path.lineTo(pts[i].dx, pts[i].dy); }
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawDashedPolyline(Canvas canvas, List<Offset> pts, Paint paint) {
-    if (pts.length < 2) return;
-    const dash = 6.0, gap = 3.0;
-    for (int i = 1; i < pts.length; i++) {
-      final from = pts[i - 1], to = pts[i];
-      final dx = to.dx - from.dx, dy = to.dy - from.dy;
-      final len = math.sqrt(dx * dx + dy * dy);
-      double drawn = 0;
-      while (drawn < len) {
-        final start = drawn;
-        final end = math.min(drawn + dash, len);
-        final s = Offset(from.dx + (start / len) * dx, from.dy + (start / len) * dy);
-        final e = Offset(from.dx + (end / len) * dx, from.dy + (end / len) * dy);
-        canvas.drawLine(s, e, paint);
-        drawn = end + gap;
-      }
-    }
-  }
-
-  void yAxisLabels(Canvas canvas, double padL, double padT, double iH, double Function(double) scaleY) {
-    for (int i = 0; i <= 4; i++) {
-      final v = minV + (i / 4) * (maxV - minV);
-      final y = padT + (i / 4) * iH;
-      final tp = TextPainter(text: TextSpan(text: v.toStringAsFixed(2), style: TextStyle(fontSize: 10, color: AppColors.textMuted)), textDirection: TextDirection.ltr);
-      tp.layout();
-      tp.paint(canvas, Offset(padL - 6 - tp.width, y - tp.height / 2));
-    }
-  }
-
-  void xAxisLabels(Canvas canvas, int total, double padT, double iH, double Function(int) scaleX) {
-    final step = math.max(1, total ~/ 5);
-    for (int i = 0; i < total; i += step) {
-      final x = scaleX(i);
-      final tp = TextPainter(text: TextSpan(text: '${i}h', style: TextStyle(fontSize: 10, color: AppColors.textMuted)), textDirection: TextDirection.ltr);
-      tp.layout();
-      tp.paint(canvas, Offset(x - tp.width / 2, padT + iH + 6));
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ChartPainter old) => old.vals != vals || old.forecastVals != forecastVals || old.hoveredIdx != hoveredIdx || old.dark != dark;
 }

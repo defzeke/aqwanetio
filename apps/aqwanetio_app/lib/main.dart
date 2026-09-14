@@ -7,6 +7,7 @@ import 'translations.dart';
 import 'models.dart';
 import 'map_styles.dart';
 import 'services/auth_api.dart';
+import 'services/stations_api.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -15,6 +16,7 @@ import 'screens/profile_screen.dart';
 final authProvider = AuthProvider();
 final settingsProvider = SettingsProvider();
 final pondFocus = PondFocusBus();
+final pondsProvider = PondsProvider();
 
 const kThemePrefKey = 'aqw-theme';
 // ponytail: SharedPreferences is already installed; no need for secure_storage for dev tokens
@@ -40,11 +42,15 @@ class PondFocusBus extends ChangeNotifier {
 }
 
 // 3. Make main async and initialize Firebase
+// ponytail: duplicate-app guard + hot-reload note — top-level providers need hot restart (R) not hot reload (r)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // ponytail: hot reload re-evaluates main.dart — guard duplicate-app; full reassemble-safe timers/listeners deferred
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   runApp(const AqwaNetioApp());
 }
 
@@ -266,5 +272,40 @@ class SettingsProvider extends ChangeNotifier {
   void toggleNotifications() {
     _notifications = !_notifications;
     notifyListeners();
+  }
+}
+
+// ponytail: single source for real ponds, falls back to mockPonds like website PondMap.tsx:148
+class PondsProvider extends ChangeNotifier {
+  final StationsApi _api = StationsApi();
+  List<Pond> _ponds = mockPonds;
+  bool _loading = false;
+  String? _error;
+
+  List<Pond> get ponds => _ponds;
+  bool get loading => _loading;
+  String? get error => _error;
+
+  PondsProvider() {
+    refresh();
+  }
+
+  Future<void> refresh() async {
+    if (_loading) return;
+    _loading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final fetched = await _api.fetchStations();
+      if (fetched.isNotEmpty) {
+        _ponds = fetched;
+      }
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      // keep _ponds as mock fallback
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
   }
 }
