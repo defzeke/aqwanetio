@@ -12,8 +12,13 @@ def _init_firebase():
     if not firebase_admin._apps:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         key_path = os.path.join(base_dir, "serviceAccountKey.json")
+        
         if not os.path.exists(key_path):
-            key_path = "serviceAccountKey.json"
+            service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+            if service_account_json:
+                with open(key_path, "w", encoding="utf-8") as f:
+                    f.write(service_account_json)
+
         cred = credentials.Certificate(key_path)
         firebase_admin.initialize_app(cred)
 
