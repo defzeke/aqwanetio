@@ -6,17 +6,17 @@ const rows = [
 
 export default function ModelComparisonCard() {
   return (
-    <section className="col-span-4 bg-white border border-[#e2e8f0] rounded-[8px] overflow-clip flex flex-col justify-between">
+    <section className="col-span-12 lg:col-span-4 bg-admin-surface border border-admin-border rounded-sm overflow-clip flex flex-col justify-between">
       <div>
-        <div className="px-6 pt-6 pb-[25px] border-b border-[#c4c6ce]">
-          <h3 className="text-[16px] text-[#000f22]">Model Benchmarking</h3>
-          <p className="text-[16px] text-[#43474d] leading-6">Tournament log: XGBoost vs. RNN (LSTM)</p>
+        <div className="px-6 pt-6 pb-[25px] border-b border-admin-border">
+          <h3 className="text-[16px] text-admin-text">Model Benchmarking</h3>
+          <p className="text-[16px] text-admin-text-secondary leading-6">Tournament log: XGBoost vs. RNN (LSTM)</p>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="bg-[#f2f4f6] border-b border-[#c4c6ce]">
+            <tr className="bg-admin-sidebar border-b border-admin-border">
               {["Model", "Accuracy", "Latency"].map((h) => (
-                <th key={h} className="text-left px-6 py-3 text-[11px] font-bold text-[#43474d] tracking-[0.55px]">
+                <th key={h} className="text-left px-6 py-3 text-[11px] font-bold text-admin-text-secondary tracking-[0.55px]">
                   {h}
                 </th>
               ))}
@@ -24,17 +24,17 @@ export default function ModelComparisonCard() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.name} className={`border-t border-[#c4c6ce] ${row.highlight ? "bg-[rgba(108,248,187,0.05)]" : ""}`}>
+              <tr key={row.name} className={`border-t border-admin-border ${row.highlight ? "bg-[rgba(108,248,187,0.05)]" : ""}`}>
                 <td className="px-6 py-4">
                   <div className="flex gap-2 items-center">
                     {row.icon}
                     <div className="flex items-center gap-2">
-                      <span className="text-[16px] font-bold text-[#191c1e] leading-6">
+                      <span className="text-[16px] font-bold text-admin-gray-400 leading-6">
                         {row.name}
                         {row.version && <><br />{row.version}</>}
                       </span>
                       {row.active && (
-                        <span className="bg-[#006c49] rounded-[2px] px-1 text-[8px] font-bold text-white">ACTIVE</span>
+                        <span className="bg-admin-green rounded-sm px-1 text-[8px] font-bold text-white">ACTIVE</span>
                       )}
                     </div>
                   </div>
@@ -42,14 +42,14 @@ export default function ModelComparisonCard() {
                 <td className="px-6 py-4 text-[16px] font-mono font-medium" style={{ color: row.accuracyColor }}>
                   {row.accuracy}
                 </td>
-                <td className="px-6 py-4 text-[16px] font-mono font-medium text-[#191c1e]">{row.latency}</td>
+                <td className="px-6 py-4 text-[16px] font-mono font-medium text-admin-gray-400">{row.latency}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="bg-[#f2f4f6] p-4">
-        <button className="flex gap-2 items-center justify-center w-full text-[11px] font-bold text-[#000f22] tracking-[0.55px]">
+      <div className="bg-admin-sidebar p-4">
+        <button className="flex gap-2 items-center justify-center w-full text-[11px] font-bold text-admin-text tracking-[0.55px]">
           Download Detailed Log
           <DownloadIcon />
         </button>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "751380543970",
+    "project_id": "aqwanetio",
+    "storage_bucket": "aqwanetio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:751380543970:android:ceb07743037b83baeae1bb",
+        "android_client_info": {
+          "package_name": "com.example.aqwanetio_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTjcUgUxqqe-OIsO1WQfAECedkO1e_o6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,22 +1,22 @@
 import { nodesService } from "@/services";
 
 const severityStyles = {
-  critical: "bg-[rgba(255,218,214,0.2)] border-l-4 border-[#ba1a1a] shadow-[0px_1px_2px_rgba(0,0,0,0.05)]",
-  info: "bg-[#eceef0] border-l-4 border-[#74777e] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]",
+  critical: "bg-admin-red-bg/20 border-l-4 border-[#ba1a1a] shadow-sm",
+  info: "bg-admin-gray-100 border-l-4 border-admin-gray-300 shadow-sm",
 };
 
 const severityTextColor = {
-  critical: "text-[#93000a]",
-  info: "text-[#43474d]",
+  critical: "text-admin-red-text",
+  info: "text-admin-text-secondary",
 };
 
 export default function SystemAlertsFeed() {
   const alerts = nodesService.getAlerts();
 
   return (
-    <div className="col-span-4 row-span-1 bg-[#f7f9fb] border border-[#c4c6ce] rounded-sm flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-[17px] border-b border-[#c4c6ce]">
-        <h3 className="text-[20px] font-semibold text-[#000f22]">System Alerts</h3>
+    <div className="col-span-12 lg:col-span-4 row-span-1 bg-admin-bg border border-admin-border rounded-sm flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between px-4 pt-4 pb-4 border-b border-admin-border">
+        <h3 className="text-[20px] font-semibold text-admin-text">System Alerts</h3>
         <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
           <circle cx="9" cy="6" r="5" stroke="#43474d" strokeWidth="1.5"/>
           <circle cx="9" cy="6" r="1.5" fill="#43474d"/>
@@ -43,8 +43,8 @@ export default function SystemAlertsFeed() {
               <span className={`text-[11px] font-bold tracking-[0.55px] ${severityTextColor[alert.severity]}`}>
                 {alert.title}
               </span>
-              <p className="text-[12px] text-[#191c1e] leading-4">{alert.description}</p>
-              <span className="text-[10px] font-mono font-medium text-[#43474d]">
+              <p className="text-[12px] text-admin-gray-400 leading-4">{alert.description}</p>
+              <span className="text-[10px] font-mono font-medium text-admin-text-secondary">
                 {alert.timestamp} &bull; {alert.source}
               </span>
             </div>

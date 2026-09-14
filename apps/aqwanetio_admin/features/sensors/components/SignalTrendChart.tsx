@@ -13,16 +13,16 @@ export default function SignalTrendChart() {
   const [active, setActive] = useState<string>("1H");
 
   return (
-    <div className="bg-white border border-[#c4c6ce] rounded-sm shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex flex-col gap-4 p-[25px] w-full">
+    <div className="bg-admin-surface border border-admin-border rounded-sm shadow-sm flex flex-col gap-4 p-6 w-full">
       <div className="flex items-center justify-between w-full">
-        <h3 className="text-[20px] font-semibold text-[#191c1e]">LoRaWAN Signal Strength Trend (RSSI)</h3>
+        <h3 className="text-[20px] font-semibold text-admin-gray-400">LoRaWAN Signal Strength Trend (RSSI)</h3>
         <div className="flex gap-2">
           {ranges.map((r) => (
             <button
               key={r}
               onClick={() => setActive(r)}
               className={`px-3 py-1 rounded text-[11px] font-bold tracking-[0.55px] ${
-                active === r ? "bg-[#eceef0] text-[#191c1e]" : "text-[#43474d]"
+                active === r ? "bg-admin-gray-100 text-admin-gray-400" : "text-admin-text-secondary"
               }`}
             >
               {r}
@@ -33,7 +33,7 @@ export default function SignalTrendChart() {
       <div className="relative h-[192px] w-full">
         <div className="absolute inset-0 grid grid-rows-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="border-b border-dashed border-[#e6e8ea]" />
+            <div key={i} className="border-b border-dashed border-admin-gray-100" />
           ))}
         </div>
         <svg viewBox="0 0 880 160" className="w-full h-full" preserveAspectRatio="none">
@@ -48,7 +48,7 @@ export default function SignalTrendChart() {
         </svg>
         <div className="absolute left-0 top-0 bottom-0 w-[43px] flex flex-col justify-between pb-1 pt-[3px]">
           {yLabels.map((l) => (
-            <span key={l} className="text-[9px] font-mono font-medium text-[#74777e]">{l}</span>
+            <span key={l} className="text-[9px] font-mono font-medium text-admin-gray-300">{l}</span>
           ))}
         </div>
       </div>

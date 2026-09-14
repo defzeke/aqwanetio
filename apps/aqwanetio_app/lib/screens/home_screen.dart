@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     authProvider.addListener(_onAuthChange);
+    pondsProvider.addListener(_onPondsChange);
     _searchCtrl.addListener(_onSearchChanged);
   }
 
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchCtrl.dispose();
     _searchFocus.dispose();
     authProvider.removeListener(_onAuthChange);
+    pondsProvider.removeListener(_onPondsChange);
     super.dispose();
   }
 
@@ -46,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onAuthChange() => setState(() {});
+  void _onPondsChange() => setState(() {});
 
   void _openPondDetail(Pond pond) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => PondDetailScreen(pond: pond)));
@@ -151,11 +154,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                   if (showChip)
-                    Container(
-                      margin: const EdgeInsets.only(right: 6),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(color: AppColors.gray100, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
-                      child: Text(u.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text)),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => Navigator.of(context).pushNamed('/profile'),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(color: AppColors.gray100, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+                        child: Text(u.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text)),
+                      ),
                     ),
                   IconButton(
                     icon: Icon(AppColors.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20, color: AppColors.textMuted),
@@ -193,9 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPondsTab() {
     final q = ((_searchQuery as dynamic) as String? ?? '').trim().toLowerCase();
+    final all = pondsProvider.ponds;
     final ponds = q.isEmpty
-        ? mockPonds
-        : mockPonds.where((p) => ((p.name as dynamic) as String? ?? '').toLowerCase().contains(q)).toList();
+        ? all
+        : all.where((p) => ((p.name as dynamic) as String? ?? '').toLowerCase().contains(q)).toList();
     final topInset = MediaQuery.paddingOf(context).top;
     return Column(
       children: [

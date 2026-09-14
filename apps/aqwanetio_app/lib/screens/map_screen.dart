@@ -9,6 +9,8 @@ import '../translations.dart';
 import '../theme.dart';
 import '../main.dart';
 import '../map_styles.dart';
+import '../widgets/claim_pond_modal.dart';
+import '../widgets/gradient_button.dart';
 
 class MapScreen extends StatefulWidget {
   final void Function(Pond pond) onPondTap;
@@ -40,25 +42,64 @@ class _MapScreenState extends State<MapScreen> {
       if (mounted) setState(() => _now = DateTime.now());
     });
     pondFocus.addListener(_onFocusRequest);
+    pondsProvider.addListener(_onPonds);
   }
 
   @override
   void dispose() {
     pondFocus.removeListener(_onFocusRequest);
+    pondsProvider.removeListener(_onPonds);
     _nightTimer?.cancel();
     super.dispose();
+  }
+
+  void _onPonds() {
+    if (mounted) setState(() {});
   }
 
   void _onFocusRequest() {
     final id = pondFocus.consume();
     if (id == null || !mounted) return;
-    final matches = mockPonds.where((p) => p.id == id).toList();
+    final matches = pondsProvider.ponds.where((p) => p.id == id).toList();
     if (matches.isEmpty) return;
     final pond = matches.first;
     _mapController.move(LatLng(pond.lat, pond.lng), 13);
   }
 
   double _nightOpacity() => max(0, 0.5 * cos(((_now.hour + _now.minute / 60 - 2) * pi) / 12));
+
+  void _showPondSheet(Pond pond) {
+    final owned = pond.ownerId != null && pond.ownerId!.isNotEmpty;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        decoration: BoxDecoration(color: AppColors.surface, borderRadius: const BorderRadius.vertical(top: Radius.circular(16))),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Center(child: Container(width: 32, height: 4, decoration: BoxDecoration(color: AppColors.gray300, borderRadius: BorderRadius.circular(2)))),
+          const SizedBox(height: 12),
+          Text(pond.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text)),
+          const SizedBox(height: 4),
+          Text('NH₃ ${pond.ammoniaLevel.toStringAsFixed(2)} ppm • ${t('status.${pond.status.name}')}', style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+          const SizedBox(height: 12),
+          if (owned) ...[
+            Text(t('mapPopup.ownedBy', {'name': pond.ownerName ?? '—'}), style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+          ] else if (authProvider.isLoggedIn) ...[
+            SizedBox(width: double.infinity, child: GradientButton(label: t('mapPopup.claimPond'), onTap: () {
+              Navigator.of(context).pop();
+              showDialog(context: context, builder: (_) => ClaimPondModal(pond: pond));
+            })),
+          ],
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(onPressed: () { Navigator.of(context).pop(); widget.onPondTap(pond); }, child: Text(t('mapPopup.viewDetails'))),
+          ),
+        ]),
+      ),
+    );
+  }
 
   Widget _glassButton(Widget child) {
     return Material(
@@ -86,7 +127,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ponds = mockPonds;
+    final ponds = pondsProvider.ponds;
     final topInset = MediaQuery.paddingOf(context).top;
     final styleId = settingsProvider.mapStyle;
     final isDark = AppColors.isDark;
@@ -129,7 +170,7 @@ class _MapScreenState extends State<MapScreen> {
                   width: 28,
                   height: 28,
                   child: GestureDetector(
-                    onTap: () => widget.onPondTap(pond),
+                    onTap: () => _showPondSheet(pond),
                     child: Container(
                       decoration: BoxDecoration(
                         color: _statusColor(pond.status),

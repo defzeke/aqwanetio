@@ -13,6 +13,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _showPassword = false;
+  bool _submitting = false;
+  String? _error;
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
 
@@ -21,6 +23,19 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _doLogin() async {
+    if (_submitting) return;
+    setState(() { _submitting = true; _error = null; });
+    try {
+      await authProvider.login(_emailCtrl.text, _passCtrl.text);
+      if (mounted) Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
+    } catch (e) {
+      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   @override
@@ -101,13 +116,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Text(t('auth.rememberDevice'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
                               ],
                             ),
+                            if (_error != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(color: AppColors.alert.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                                child: Text(_error!, style: TextStyle(fontSize: 13, color: AppColors.alert)),
+                              ),
+                            ],
                             const SizedBox(height: 20),
                             GradientButton(
-                              label: t('auth.signIn'),
-                              onTap: () async {
-                                await authProvider.login(_emailCtrl.text, _passCtrl.text);
-                                if (context.mounted) Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
-                              },
+                              label: _submitting ? 'Signing in...' : t('auth.signIn'),
+                              onTap: _submitting ? null : _doLogin,
                             ),
                             const SizedBox(height: 4),
                             Center(

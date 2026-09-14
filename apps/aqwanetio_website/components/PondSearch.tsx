@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { pondsService } from "@/features/ponds/services";
 import { focusPond } from "@/lib/pond-focus";
 import { useTranslation } from "@/lib/translations";
+import { pondsService } from "@/features/ponds/services";
+import { fetchStations, type Station } from "@/features/stations/services/stations.service";
 
 const statusDot: Record<string, string> = {
   safe: "bg-safe",
@@ -16,12 +17,34 @@ export default function PondSearch() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [stations, setStations] = useState<Station[]>([]);
+
+  const ponds = pondsService.getAll();
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetchStations(ctrl.signal)
+      .then((rows) => {
+        if (!ctrl.signal.aborted) setStations(rows);
+      })
+      .catch((e: any) => {
+        if (e?.name === "AbortError") return;
+        console.warn("GET /stations failed (backend down on :8000?)", e);
+        if (!ctrl.signal.aborted) setStations([]);
+      });
+    return () => ctrl.abort();
+  }, []);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    return pondsService.getAll().filter((p) => p.name.toLowerCase().includes(q));
-  }, [query]);
+    return stations.filter(
+      (s) =>
+        s.location.toLowerCase().includes(q) ||
+        s.municipality.toLowerCase().includes(q) ||
+        s.province.toLowerCase().includes(q)
+    );
+  }, [query, stations]);
 
   const select = (id: string) => {
     focusPond(id);
@@ -56,7 +79,7 @@ export default function PondSearch() {
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && results.length > 0) select(results[0].id);
+          if (e.key === "Enter" && results.length > 0) select(String(results[0].stationId));
         }}
         placeholder={t("header.searchPond")}
         aria-label={t("header.searchPond")}
@@ -85,18 +108,23 @@ export default function PondSearch() {
           aria-label={t("header.searchPond")}
           className="neu-card absolute right-0 top-full z-50 mt-2 max-h-72 w-64 overflow-y-auto p-1.5"
         >
-          {results.map((p) => (
-            <li key={p.id} role="option" aria-selected={false}>
-              <button
-                type="button"
-                onClick={() => select(p.id)}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-raised"
-              >
-                <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[p.status]}`} aria-hidden="true" />
-                <span className="truncate">{p.name}</span>
-              </button>
-            </li>
-          ))}
+          {results.map((s) => {
+            const idx = stations.findIndex((x) => x.stationId === s.stationId);
+            const mock = ponds[idx % ponds.length] || ponds[0];
+            return (
+              <li key={s.stationId} role="option" aria-selected={false}>
+                <button
+                  type="button"
+                  onClick={() => select(String(s.stationId))}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-raised"
+                >
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[mock.status]}`} aria-hidden="true" />
+                  <span className="truncate">{s.location}</span>
+                  <span className="ml-auto shrink-0 text-xs text-muted">{s.municipality}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

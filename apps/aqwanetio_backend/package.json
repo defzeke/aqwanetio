@@ -1,0 +1,7 @@
+{
+  "name": "aqwanetio_backend",
+  "private": true,
+  "scripts": {
+    "dev": "venv\\Scripts\\uvicorn main:app --reload --port 8000"
+  }
+}

@@ -8,19 +8,19 @@ import ConsumablesReorder from "./components/ConsumablesReorder";
 
 export default function SensorsPage() {
   return (
-    <div className="flex flex-col gap-6 w-full pb-4 pt-24 px-6 max-w-[1440px]">
+    <div className="flex flex-col gap-6 w-full pb-12 pt-24 px-6 max-w-[1440px] mx-auto">
       <SensorsHeader />
-      <div className="grid grid-cols-12 gap-6 w-full">
-        <div className="col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full">
+        <div className="col-span-12 lg:col-span-4">
           <GatewayHealthCard />
         </div>
-        <div className="col-span-8">
+        <div className="col-span-12 lg:col-span-8">
           <NetworkReachCard />
         </div>
       </div>
       <SignalTrendChart />
       <SensorInventoryTable />
-      <div className="flex gap-6 w-full">
+      <div className="flex flex-col lg:flex-row gap-4 w-full">
         <MaintenanceLog />
         <ConsumablesReorder />
       </div>

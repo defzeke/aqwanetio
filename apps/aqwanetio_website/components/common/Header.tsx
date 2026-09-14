@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { UserCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import SettingsDropdown from "@/components/SettingsDropdown";
 import PondSearch from "@/components/PondSearch";
@@ -30,7 +31,21 @@ export default function Header() {
     useSettings();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setProfileOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [profileOpen]);
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-[1003] flex flex-col items-center px-3 sm:px-6">
@@ -77,11 +92,39 @@ export default function Header() {
         <div className="hidden items-center gap-2 md:flex">
           <SettingsDropdown />
           {user ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted">{user.name}</span>
-              <button onClick={logout} className="btn btn-ghost px-4 py-2 text-sm text-muted">
-                {t("header.signOut")}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-raised transition-colors hover:bg-raised/80"
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+                aria-label="Profile menu"
+              >
+                <UserCircle className="h-5 w-5 text-cyan" />
               </button>
+              {profileOpen && (
+                <div className="neu-card absolute right-0 top-full z-50 mt-3 w-64 overflow-hidden p-1">
+                  <div className="px-3 py-2">
+                    <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+                    <p className="truncate text-xs text-muted">{user.email}</p>
+                  </div>
+                  <div className="my-1 h-px bg-line" />
+                  <Link
+                    href="/profile"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-raised"
+                  >
+                    <UserCircle className="h-4 w-4 text-muted" /> Profile Settings
+                  </Link>
+                  <div className="my-1 h-px bg-line" />
+                  <button
+                    onClick={() => { setProfileOpen(false); logout(); router.push("/"); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-alert hover:bg-alert/10"
+                  >
+                    <LogOut className="h-4 w-4" /> {t("header.signOut")}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>

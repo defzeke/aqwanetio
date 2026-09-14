@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models.dart';
+import '../main.dart';
 import '../theme.dart';
 import '../translations.dart';
 
@@ -70,7 +71,7 @@ class _PondSearchState extends State<PondSearch> {
         final raw = (value.text as dynamic) as String? ?? '';
         final q = raw.trim().toLowerCase();
         if (q.isEmpty) return const <Pond>[];
-        return mockPonds.where((p) => (((p.name as dynamic) as String? ?? '').toLowerCase().contains(q)));
+        return pondsProvider.ponds.where((p) => (((p.name as dynamic) as String? ?? '').toLowerCase().contains(q)));
       },
       onSelected: (pond) {
         _controller.clear();

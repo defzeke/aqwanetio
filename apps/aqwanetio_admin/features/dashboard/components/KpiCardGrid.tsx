@@ -36,19 +36,19 @@ export default function KpiCardGrid() {
   const kpis = nodesService.getKpis();
 
   return (
-    <div className="grid grid-cols-4 gap-4 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       {kpis.map((kpi) => (
-        <div key={kpi.label} className="flex flex-col gap-1 bg-[#f7f9fb] border border-[#c4c6ce] rounded-sm p-[21px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]">
+        <div key={kpi.label} className="flex flex-col gap-1 bg-admin-bg border border-admin-border rounded-sm p-5 shadow-sm">
           <div className="flex items-start justify-between w-full">
             {iconMap[kpi.icon as keyof typeof iconMap]}
-            <span className="text-[12px] font-medium text-[#006c49]" style={{ color: kpi.trendColor === "#ba1a1a" ? "#ba1a1a" : kpi.trendColor === "#314865" ? "#314865" : "#006c49" }}>
+            <span className="text-[12px] font-medium text-admin-green" style={{ color: kpi.trendColor === "#ba1a1a" ? "#ba1a1a" : kpi.trendColor === "#314865" ? "#314865" : "#006c49" }}>
               {kpi.trend}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-[#43474d] tracking-[0.55px] pt-3">{kpi.label}</span>
+          <span className="text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] pt-3">{kpi.label}</span>
           <div className="flex items-baseline gap-1">
-            <span className="text-[32px] font-bold text-[#000f22] tracking-[-0.64px]">{kpi.value}</span>
-            {kpi.unit && <span className="text-[14px] text-[#43474d]">{kpi.unit}</span>}
+            <span className="text-[32px] font-bold text-admin-text tracking-[-0.64px]">{kpi.value}</span>
+            {kpi.unit && <span className="text-[14px] text-admin-text-secondary">{kpi.unit}</span>}
           </div>
         </div>
       ))}

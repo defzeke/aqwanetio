@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SideNavLink from "./SideNavLink";
 import PondSelector from "./PondSelector";
@@ -17,11 +18,24 @@ const bottomLinks = [
   { href: "/support", label: "SUPPORT", icon: <SupportIcon />, disabled: true },
 ];
 
-export default function SideNavBar() {
+export default function SideNavBar({ open, onClose, onAddClick }: { open: boolean; onClose: () => void; onAddClick: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-16 w-[280px] h-[calc(100vh-64px)] bg-[#f2f4f6] border-r border-[#c4c6ce] flex flex-col justify-between overflow-auto py-6">
+    <>
+      {/* backdrop for mobile */}
+      {open && (
+        <div
+          aria-hidden
+          onClick={onClose}
+          className="fixed inset-0 top-16 bg-black/30 z-10 lg:hidden"
+        />
+      )}
+      <aside
+        className={`fixed left-0 top-16 w-[280px] h-[calc(100vh-64px)] bg-admin-sidebar border-r border-admin-border flex flex-col justify-between overflow-auto py-6 z-20 transition-transform duration-200 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       <div className="flex flex-col gap-8 items-center w-full">
         <PondSelector />
         <nav className="flex flex-col gap-1 w-full px-4">
@@ -35,10 +49,26 @@ export default function SideNavBar() {
             />
           ))}
         </nav>
-        <button className="flex gap-2 items-center justify-center bg-[#000f22] text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px]">
-          <AddIcon />
-          ADD NEW POND
-        </button>
+        <div className="flex flex-col gap-2 items-center">
+          <button
+            onClick={onAddClick}
+            className="flex gap-2 items-center justify-center bg-admin-text text-white text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px] hover:opacity-90"
+          >
+            <AddIcon />
+            ADD NEW POND
+          </button>
+          {/* ponytail: ownership claims review */}
+          <Link
+            href="/ownership-claims"
+            className={`flex gap-2 items-center justify-center text-[11px] font-bold tracking-[0.55px] rounded py-3 w-[215px] hover:opacity-90 ${
+              pathname === "/ownership-claims" || pathname.startsWith("/ownership-claims/")
+                ? "bg-admin-nav-active text-white"
+                : "bg-admin-text text-white"
+            }`}
+          >
+            REVIEW OWNERSHIP CLAIMS
+          </Link>
+        </div>
       </div>
       <nav className="flex flex-col gap-1 w-full px-4">
         {bottomLinks.map((link) => (
@@ -52,7 +82,8 @@ export default function SideNavBar() {
           />
         ))}
       </nav>
-    </aside>
+      </aside>
+    </>
   );
 }
 

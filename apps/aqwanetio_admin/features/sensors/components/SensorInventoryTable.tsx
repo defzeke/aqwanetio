@@ -20,26 +20,26 @@ export default function SensorInventoryTable() {
   const onlinePct = Math.round((online / sensors.length) * 100);
 
   return (
-    <div className="bg-white border border-[#c4c6ce] rounded-sm shadow-[0px_1px_2px_rgba(0,0,0,0.05)] w-full overflow-clip">
-      <div className="flex items-center justify-between px-6 pt-4 pb-[17px] border-b border-[#c4c6ce]">
-        <h3 className="text-[20px] font-semibold text-[#191c1e]">Sensor Hardware Inventory</h3>
+    <div className="bg-admin-surface border border-admin-border rounded-sm shadow-sm w-full overflow-clip">
+      <div className="flex items-center justify-between px-6 pt-4 pb-4 border-b border-admin-border">
+        <h3 className="text-[20px] font-semibold text-admin-gray-400">Sensor Hardware Inventory</h3>
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center">
-            <div className="size-2 rounded-full bg-[#006c49]" />
-            <span className="text-[10px] text-[#191c1e]">Online: {online}</span>
+            <div className="size-2 rounded-full bg-admin-green" />
+            <span className="text-[10px] text-admin-gray-400">Online: {online}</span>
           </div>
           <div className="flex gap-2 items-center">
-            <div className="size-2 rounded-full bg-[#ba1a1a]" />
-            <span className="text-[10px] text-[#191c1e]">Offline: {offline}</span>
+            <div className="size-2 rounded-full bg-admin-red" />
+            <span className="text-[10px] text-admin-gray-400">Offline: {offline}</span>
           </div>
         </div>
       </div>
-      <div className="overflow-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px]">
           <thead>
-            <tr className="bg-[#f2f4f6] border-b border-[#c4c6ce]">
+            <tr className="bg-admin-sidebar border-b border-admin-border">
               {["SENSOR ID", "POND MAPPING", "DEPTH", "BATTERY", "STATUS", "CALIBRATION", "DRIFT", "ACTIONS"].map((h) => (
-                <th key={h} className={`text-[11px] font-bold text-[#43474d] tracking-[0.55px] px-4 py-3 ${
+                <th key={h} className={`text-[11px] font-bold text-admin-text-secondary tracking-[0.55px] px-4 py-3 ${
                   h === "DEPTH" ? "text-right" : "text-left"
                 }`}>
                   {h}
@@ -49,34 +49,34 @@ export default function SensorInventoryTable() {
           </thead>
           <tbody>
             {sensors.map((s, i) => (
-              <tr key={s.id} className={i > 0 ? "border-t border-[#c4c6ce]" : ""}>
+              <tr key={s.id} className={i > 0 ? "border-t border-admin-border" : ""}>
                 <td className="px-4 py-3">
-                  <span className="text-[13px] font-mono font-medium text-[#191c1e]">{s.id}</span>
+                  <span className="text-[13px] font-mono font-medium text-admin-gray-400">{s.id}</span>
                 </td>
-                <td className="px-4 py-3 text-[14px] text-[#191c1e]">{s.pondMapping}</td>
+                <td className="px-4 py-3 text-[14px] text-admin-gray-400">{s.pondMapping}</td>
                 <td className="px-4 py-3">
-                  <span className="text-[13px] font-mono font-medium text-[#191c1e] text-right block">{s.depth}</span>
+                  <span className="text-[13px] font-mono font-medium text-admin-gray-400 text-right block">{s.depth}</span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2 items-center">
                     <BatteryIcon level={s.battery} />
-                    <span className="text-[13px] font-mono font-medium text-[#191c1e]">{s.battery}%</span>
+                    <span className="text-[13px] font-mono font-medium text-admin-gray-400">{s.battery}%</span>
                   </div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1.5 items-center">
-                    <div className={`size-1.5 rounded-full ${s.online ? "bg-[#006c49]" : "bg-[#ba1a1a]"}`} />
-                    <span className={`text-[10px] ${s.online ? "text-[#00714d]" : "text-[#93000a]"}`}>
+                    <div className={`size-1.5 rounded-full ${s.online ? "bg-admin-green" : "bg-admin-red"}`} />
+                    <span className={`text-[10px] ${s.online ? "text-admin-green-text" : "text-admin-red-text"}`}>
                       {s.online ? "ONLINE" : "OFFLINE"}
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-[13px] font-mono font-medium text-[#43474d]">{s.lastCalibration}</td>
+                <td className="px-4 py-3 text-[13px] font-mono font-medium text-admin-text-secondary">{s.lastCalibration}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex px-2 py-0.5 rounded text-[10px] ${
                     s.drift === "nominal"
-                      ? "bg-[#6cf8bb] text-[#00714d]"
-                      : "bg-[#ffdad6] text-[#93000a]"
+                      ? "bg-admin-green-bg text-admin-green-text"
+                      : "bg-admin-red-bg text-admin-red-text"
                   }`}>
                     {s.drift === "nominal" ? "NOMINAL" : "NEEDS CAL"}
                   </span>
