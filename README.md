@@ -1,159 +1,23 @@
-# Turborepo starter
+# AqwaNetIO — DOST-ASTI
 
-This Turborepo starter is maintained by the Turborepo core team.
+Real-time water quality monitoring and ammonia toxicity forecasting for Philippine aquaculture.
 
-## Using this example
+AqwaNetIO helps fish farmers, cooperatives, and BFAR field staff see what’s happening in their ponds before it becomes a kill. Ammonia (NH₃) from waste and decaying organics turns toxic quickly — especially when pH and temperature rise — causing gill damage, stunted growth, and mass mortality. The system combines live sensor streams with 6-hour ahead machine-learning forecasts (XGBoost/RNN) and STL decomposition (trend / seasonal / residual) so interventions happen hours early, not after the spike.
 
-Run the following command:
+## How it works
 
-```sh
-npx create-turbo@latest
-```
+Sensor readings flow into a national pond map with threshold-aware rendering — Safe below 0.4 ppm, Warning 0.4–1.0 ppm, Toxic above 1.0 ppm. Each pond exposes Live and 30-day Historical views: Trends Over Time (current value + forecast dashed line at 1.0 ppm critical), Station Comparison across the fleet, and a Pond Health Radar balancing pH, dissolved oxygen, temperature, salinity, and ammonium. Nine metrics are tracked — Ammonia, Ammonium (p210/p218), Dissolved Oxygen and Saturation (p176/p177), pH value and mV (p209/p217), Water Temperature (p170) and Salinity (p173).
 
-## What's inside?
+Access is role-based and bilingual (EN/FIL). Guests see ammonia only; verified owners unlock full metrics, station comparison, and health index after claiming a pond with Google Drive proof reviewed by operations.
 
-This Turborepo includes the following packages/apps:
+## Apps
 
-### Apps and Packages
+**Website** — Public intelligence portal (Next.js, MapLibre, Recharts). National map with pond search and focus, pond detail modals, auth (register/login/profile), claim-pond workflow, and science docs on ammonia toxicity.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+**Mobile** — Companion for farmers in the field (Flutter, flutter_map, fl_chart). Map and Ponds tabs, pond detail with the same forecast charts and metrics, pond search, offline-tolerant station fetch, and Firebase Auth session.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+**Backend** — FastAPI service on Firebase Auth / Firestore and Neon Postgres. Serves stations and claims, verifies Bearer tokens, and proxies strict password verification via Identity Toolkit.
 
-### Utilities
+**Admin** — Operations console for DOST-ASTI (Next.js, MapLibre). KPI tiles, AquaSense node status and signal health, system alerts, network health trends, threshold management, and ownership-claim review (approve/reject with pond assignment).
 
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Built as a Turborepo + pnpm monorepo. Branding, thresholds, and copy mirror DOST-ASTI’s design system.
