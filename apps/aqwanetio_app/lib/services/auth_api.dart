@@ -17,7 +17,7 @@ class AuthApi {
   static String resolveBaseUrl() {
     const defined = String.fromEnvironment('API_URL');
     if (defined.isNotEmpty) return defined;
-    if (kIsWeb) return 'http://127.0.0.1:8000';
+    if (kIsWeb) return 'https://aqwanetio.onrender.com';
     if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8000';
     }
